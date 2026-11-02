@@ -1,0 +1,5 @@
+# Sao chep file nay thanh db.properties roi sua thong tin may cua minh.
+# File db.properties that KHONG duoc commit (da ghi trong .gitignore).
+db.url=jdbc:sqlserver://localhost:1433;databaseName=N15_PTUD_DB;encrypt=true;trustServerCertificate=true
+db.user=sa
+db.password=doi_mat_khau_sa_cua_ban

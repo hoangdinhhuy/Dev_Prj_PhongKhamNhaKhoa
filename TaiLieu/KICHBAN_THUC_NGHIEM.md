@@ -10,8 +10,8 @@
 | --- | --- | --- |
 | P1 | Cài JDK 21 + Maven (hoặc VS Code + Extension Pack for Java); cài SQL Server Express + SSMS | `java -version` báo 21; `mvn -v` chạy được |
 | P2 | Bật TCP/IP 1433 trong SQL Server Configuration Manager, restart dịch vụ; bật SQL auth + user `sa` | `sqlcmd -S localhost -U sa -P <mật khẩu> -Q "SELECT 1"` trả về 1 |
-| P3 | Trong SSMS chạy `SourceCode/DATA/schema/000_hatang.sql` → `010_*.sql` đúng thứ tự | Mỗi file in ra "… OK"; có 13 bảng trong `N15_PTUD_DB` (12 bảng nghiệp vụ + `BoDem`) |
-| P4 | Chạy `SourceCode/DATA/seed/001_…` → `010_…` đúng thứ tự | Mỗi file in ra "… OK"; `PhieuKham` có 6 phiếu (4 hôm nay, 2 hôm qua) |
+| P3 | Trong SSMS chạy `SourceCode/DATA/schema/000_hatang.sql` → `013_hanghoa.sql` đúng thứ tự | Mỗi file in ra "… OK"; có thêm bảng `HangHoa` trong `N15_PTUD_DB` |
+| P4 | Chạy `SourceCode/DATA/seed/001_…` → `013_seed_hanghoa.sql` đúng thứ tự | `PhieuKham` có dữ liệu demo; `HangHoa` có 6 mặt hàng mẫu |
 | P5 | Copy `src/db.properties.example` thành `db.properties`, sửa `db.password` | File tồn tại, KHÔNG hiện trong `git status` |
 | P6 | Tại thư mục gốc chạy `mvn clean compile` rồi `mvn javafx:run` | Mở màn hình **Đăng nhập** (nếu lỗi kết nối → xem lại P2–P5) |
 
@@ -41,10 +41,10 @@
 | 1.1 | Để trống cả hai ô, bấm Đăng nhập | Alert VL13 | | |
 | 1.2 | `letan` / mật khẩu sai | Alert TB01, ở lại màn đăng nhập | | |
 | 1.3 | `lockacc` / `123456` | Alert TB02 "Tài khoản của bạn đã bị khóa." | | |
-| 1.4 | `letan` / `123456` | Vào GD_Chinh, header "Xin chào, Hoàng Đình Huy [Lễ tân]"; menu chỉ có: QL hồ sơ, Tra cứu, Thu phí, Lập phiếu | | |
-| 1.5 | Đăng xuất → `bacsi1` / `123456` | Menu chỉ có "Khám và chẩn đoán (UC004)" | | |
-| 1.6 | Đăng xuất → `phuta` / `123456` | Menu chỉ có "Theo dõi hàng chờ (UC009)" | | |
-| 1.7 | Đăng xuất → `quanly` / `123456` | Menu có: Tra cứu, Hàng chờ, QL nhân viên, QL dịch vụ, Báo cáo — **không có** màn lễ tân/bác sĩ | | |
+| 1.4 | `letan` / `123456` | Vào GD_Chinh; menu có: Tổng quan, Hồ sơ bệnh nhân, Tra cứu hồ sơ bệnh nhân, Thu lệ phí khám, Thanh toán dịch vụ, Lập phiếu khám | | |
+| 1.5 | Đăng xuất → `bacsi1` / `123456` | Menu có: Tổng quan, Khám và chẩn đoán, Lịch sử khám | | |
+| 1.6 | Đăng xuất → `phuta` / `123456` | Menu có: Tổng quan, Hàng chờ theo phòng | | |
+| 1.7 | Đăng xuất → `quanly` / `123456` | Menu có: Tổng quan, Quản lý hàng hóa, Quản lý nhân viên, Quản lý dịch vụ, Báo cáo lượt khám, AI dự báo vật tư (chức năng bổ sung); không có Tra cứu hồ sơ bệnh nhân, Hàng chờ theo phòng, Lịch sử khám | | |
 | 1.8 | DB: `SELECT matKhau FROM TaiKhoan WHERE tenDangNhap='letan'` | Giá trị là hash 64 ký tự, không phải "123456" | | |
 
 ## S2 — UC002: Quản lý hồ sơ bệnh nhân (đăng nhập `letan`)
@@ -126,11 +126,23 @@
 | 7.5 | Đổi trạng thái DV0012 → NGUNG_PHUC_VU | Thành công; bac sĩ **không** chỉ định được DV này (S6.6) | | |
 | 7.6 | Đổi trạng thái DV0001 (Phí khám ban đầu) → NGUNG | ⚠️ Cho phép nhưng sẽ làm thu phí lỗi — khôi phục lại DANG_PHUC_VU ngay sau test | | |
 
+## QT-07 — Quản lý hàng hóa/tồn kho (`quanly`)
+
+| Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
+| --- | --- | --- | --- | --- |
+| QT07.1 | Mở “Quản lý hàng hóa” (trên “Quản lý nhân viên”) | Bảng hàng hóa hiển thị mã, tên, đơn vị, tồn kho, mức tối thiểu, tình trạng | | |
+| QT07.2 | Thêm “Găng tay y tế”, đơn vị “Hộp”, tồn 10, tối thiểu 5 | Tạo mã HH tự động, xuất hiện trong bảng, tình trạng “Đủ hàng” | | |
+| QT07.3 | Thêm lại cùng tên | Báo TB18, không tạo bản ghi trùng | | |
+| QT07.4 | Chọn hàng vừa thêm, sửa tồn thành 3 rồi cập nhật | Bảng hiển thị 3, tình trạng “Cần bổ sung” | | |
+| QT07.5 | Nhập tồn âm hoặc chữ | Báo VL18, dữ liệu cũ giữ nguyên | | |
+
 ## S8 — UC010: Quản lý nhân viên & tài khoản (`quanly`)
 
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
 | 8.1 | Thêm NV thiếu họ tên / SĐT sai | Alert VL01 / VL02 | | |
+| 8.1a | Thêm hoặc sửa NV với ngày sinh chưa đủ 18 tuổi (mọi chức vụ) | Alert VL14; dữ liệu nhân viên không bị thay đổi | | |
+| 8.1b | Thêm hoặc sửa NV đúng ngày tròn 18 tuổi | Cho phép lưu nếu các dữ liệu khác hợp lệ | | |
 | 8.2 | Thêm NV hợp lệ (chức vụ PHU_TA) | Mã `NVyyMMdd000x`, hiện trong bảng | | |
 | 8.3 | Chọn NV mới, tạo tài khoản `phuta2` / `123456` | Báo thành công; đăng nhập được `phuta2` | | |
 | 8.4 | Tạo lại tên `phuta2` | Alert TB14 | | |
@@ -169,22 +181,20 @@
 | TC-S11-04 | Thanh toán lại cùng lượt khám | Báo TB17 "Lượt khám này đã được thanh toán." | | |
 | TC-S11-05 | `bacsi1` → "Lịch sử khám" | Bảng mọi lượt khám (badge màu theo trạng thái); tìm "Nguyễn" → lọc đúng | | |
 | TC-S11-06 | Double-click một dòng lịch sử | Hộp chi tiết: chẩn đoán, kết quả, thuốc tự mua, trạng thái | | |
-| TC-S11-07 | `letan` → "Lập phiếu khám" → Xem phiếu → In phiếu | Hộp thoại chọn máy in của Windows; in được phiếu (hoặc báo "Không tìm thấy máy in" nếu máy không có) | | |
-| TC-S11-08 | `phuta` → "Hàng chờ theo phòng" → chọn 1 bệnh nhân trong hàng chờ | Hiện banner "AI dự đoán thời gian chờ: ~X phút" (tính theo vị trí hàng chờ + lượt đang khám + thời lượng trung bình) | | |
-| TC-S11-10 | `quanly` → "AI dự báo vật tư" → Chạy dự báo | Bảng vật tư (Găng tay, Khẩu trang, Vật liệu trám, Thuốc tê...) với "Đã dùng 30 ngày" + "Dự báo 2 tuần tới" + ghi chú nhu cầu | | |
+| TC-S11-07 | `letan` → "Lập phiếu khám" → Xem / in phiếu PDF | Bản xem trước phiếu tiếp nhận A4 có STT, phòng khám, thông tin bệnh nhân, bác sĩ, lý do, hướng dẫn và mã QR tra cứu; Lưu PDF tạo tệp mở được, In phiếu mở hộp chọn máy in | | |
 
 ---
 
 
-## S12 — Chế độ sáng/tối, Fullscreen, hiển thị dữ liệu
+## S12 — Giao diện toàn màn hình và hiển thị dữ liệu
 
 | Mã | Tình huống | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
-| TC-S12-01 | Đăng nhập bất kỳ → bấm "Chế độ tối" ở sidebar | Toàn bộ cửa sổ chuyển nền tối (sidebar/header/card/bảng), chữ sáng, nút "Chế độ sáng" | | |
-| TC-S12-02 | Bấm lại "Chế độ sáng" | Trở lại giao diện sáng như ban đầu | | |
-| TC-S12-03 | Bật chế độ tối → mở từng chức năng | Mọi màn hình (kể cả bảng, form, combobox) hiển thị đúng nền tối, chữ sáng | | |
-| TC-S12-04 | Đăng xuất khi đang chế độ tối → đăng nhập lại | App giữ/khôi phục hiển thị đúng, không lỗi | | |
-| TC-S12-05 | Mở app (đã maximize mặc định) → maximize fullscreen | Nút menu 15px + icon 30px; dòng bảng 42px; không có nút/chữ quá nhỏ | | |
+| TC-S12-01 | Mở màn đăng nhập và màn chính | Nút nguồn nền xanh, biểu tượng trắng ở góc trên phải; đóng được ứng dụng | | |
+| TC-S12-02 | Quan sát panel ảnh đăng nhập | Nền panel xanh liền với mép ảnh, không có dải màu lệch rõ | | |
+| TC-S12-03 | Đăng nhập rồi chọn các chức năng trong menu | Chuyển màn hình bằng menu, không có nút Quay lại dư thừa | | |
+| TC-S12-04 | Bấm Đăng xuất ở sidebar | Nút có biểu tượng đăng xuất cạnh chữ; trở về màn đăng nhập | | |
+| TC-S12-05 | Mở app toàn màn hình | Menu và dòng bảng dễ đọc; không có nút/chữ quá nhỏ | | |
 | TC-S12-06 | Fullscreen → mở Tra cứu / Hồ sơ / Lịch sử khám | Bảng dãn theo khung, đủ cột, không tràn ngang, không trống rỗng | | |
 | TC-S12-07 | Fullscreen → Thu phí / Khám bệnh | Form nằm trong card cân đối, ô nhập dãn theo khung, không bị hẹp cắt chữ | | |
 | TC-S12-08 | Kiểm tra data: Hồ sơ bệnh nhân | Đúng 10 bệnh nhân, đủ CCCD + địa chỉ + tiền sử hiển thị đầy đủ, không trùng lặp | | |

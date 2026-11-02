@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.GD_ThuPhi_Controller" prefWidth="720" prefHeight="420">
+    <top><HBox styleClass="header" alignment="CENTER_LEFT" spacing="14"><Label text="Thu tiền phí khám ban đầu" styleClass="page-title"/><Region HBox.hgrow="ALWAYS"/></HBox></top>
+    <center>
+        <VBox styleClass="card" spacing="10" maxWidth="Infinity"><GridPane hgap="10" vgap="10" maxWidth="Infinity">
+            <Label text="Mã BN / SĐT" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="txt_timBN" prefWidth="280" GridPane.rowIndex="0" GridPane.columnIndex="1"
+                       promptText="BN... hoặc 090..."/>
+            <Button fx:id="btn_tim" text="Tìm" onAction="#tim" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
+            <Label text="Bệnh nhân" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <Label fx:id="lb_thongTinBN" text="(chưa chọn)" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                   GridPane.columnSpan="2" style="-fx-font-weight: bold;"/>
+            <Label text="Mức phí khám" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label fx:id="lb_mucPhi" text="(đang nạp)" GridPane.rowIndex="2" GridPane.columnIndex="1"
+                   GridPane.columnSpan="2"/>
+            <Label text="Hình thức" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <ComboBox fx:id="cbb_hinhThuc" prefWidth="280" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+            <Label text="Tiền khách đưa" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <TextField fx:id="txt_tienKhachDua" prefWidth="280" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+            <Label text="Tiền thừa" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+            <Label fx:id="lb_tienThua" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <HBox spacing="10" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="3">
+                <Button fx:id="btn_thuPhi" text="Thu phí" onAction="#thuPhi" defaultButton="true"/>
+                <Button fx:id="btn_dungHoaDonCoSan" text="Dùng hóa đơn đã thu" onAction="#dungHoaDonDaThu"/>
+            </HBox>
+            <Label fx:id="lb_hoaDon" wrapText="true" GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="3"/>
+        </GridPane></VBox>
+    </center>
+</BorderPane>

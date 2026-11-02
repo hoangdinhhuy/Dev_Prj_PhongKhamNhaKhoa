@@ -50,7 +50,6 @@
 | D05-1 | Bấm "Chế độ tối" ở sidebar | Toàn bộ nền tối, chữ sáng, nút "Chế độ sáng" | | |
 | D05-2 | Chế độ tối → mở từng chức năng | Mọi màn hiển thị đúng nền tối, không chữ chìm | | |
 | D05-3 | Bấm "Chế độ sáng" | Trở lại giao diện sáng | | |
-| D05-4 | "AI dự báo vật tư" → Chạy dự báo | Bảng vật tư + dự báo 2 tuần + ghi chú nhu cầu | | |
 
 ## Ghi nhận
 

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.GD_TongQuan_Controller" prefWidth="900">
+    <top>
+        <HBox styleClass="header">
+            <Label text="Tổng quan" styleClass="page-title"/>
+        </HBox>
+    </top>
+    <center>
+        <VBox styleClass="center-pane" spacing="14">
+            <HBox spacing="14">
+                <VBox styleClass="card" spacing="4" prefWidth="260">
+                    <Label text="HÔM NAY" styleClass="stat-label"/>
+                    <Label fx:id="lb_homNay" styleClass="big-date" text="—"/>
+                </VBox>
+                <VBox styleClass="card" spacing="4" prefWidth="260">
+                    <Label text="VAI TRÒ" styleClass="stat-label"/>
+                    <Label fx:id="lb_vaiTro" styleClass="big-date" text="—"/>
+                </VBox>
+                <VBox styleClass="card" spacing="4" prefWidth="300" HBox.hgrow="ALWAYS">
+                    <Label text="HỆ THỐNG" styleClass="stat-label"/>
+                    <Label text="DentistClinic" styleClass="stat-value"/>
+                    <Label text="Nha khoa Sài Gòn - Nhóm 15" styleClass="hint-text"/>
+                </VBox>
+            </HBox>
+            <VBox styleClass="card" spacing="8" VBox.vgrow="ALWAYS">
+                <Label fx:id="lb_chaoMung" styleClass="welcome-title" wrapText="true"/>
+                <Label wrapText="true" styleClass="hint-text"
+                       text="Chọn chức năng ở menu bên trái. Luồng demo: Lễ tân tạo hồ sơ &amp; thu phí → Lập phiếu cấp STT → Phụ tá gọi số &amp; vào khám → Bác sĩ khám &amp; hoàn tất → Quản lý xem báo cáo."/>
+                <Region styleClass="welcome-illustration" prefHeight="400" VBox.vgrow="ALWAYS"/>
+            </VBox>
+        </VBox>
+    </center>
+</BorderPane>

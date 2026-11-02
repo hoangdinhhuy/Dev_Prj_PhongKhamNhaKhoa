@@ -32,10 +32,8 @@ Việc đặt lịch hẹn qua điện thoại/quét QR **không thuộc phạm 
 
 | Tính năng | Vai trò dùng | Mô tả |
 | --- | --- | --- |
-| AI dự đoán thời gian chờ | Phụ tá | Ở màn Hàng chờ: chọn bệnh nhân → ước tính phút vào khám theo vị trí hàng chờ + lượt đang khám + thời lượng trung bình lịch sử |
-| AI dự báo vật tư | Quản lý | Màn "AI dự báo vật tư": dự báo găng tay/khẩu trang/vật liệu trám/thuốc tê 2 tuần tới theo dịch vụ đã chỉ định 30 ngày, kèm ghi chú nhu cầu |
 | Chế độ sáng / tối | Mọi vai trò | Nút chuyển ở sidebar; lưu theo phiên đăng nhập |
-| In phiếu khám | Lễ tân | Sau khi lập phiếu → "Xem phiếu" → In phiếu (máy in Windows) |
+| In phiếu khám + quét CCCD bằng điện thoại (Live Text) | Lễ tân | Sau khi lập phiếu → "Xem phiếu" → In phiếu (máy in Windows) |
 
 > Cả 2 AI đều **chỉ hỗ trợ vận hành**, tính trực tiếp từ dữ liệu DB (offline, không can thiệp chẩn đoán/điều trị của bác sĩ).
 
@@ -53,6 +51,8 @@ Việc đặt lịch hẹn qua điện thoại/quét QR **không thuộc phạm 
 | UC008 | Xem báo cáo lượt khám (kèm xuất CSV, không có doanh thu) | Quản lý | Duy |
 | UC009 | Theo dõi hàng chờ (gọi số, xác nhận vào khám) | Phụ tá | Thanh |
 | UC010 | Quản lý nhân viên & tài khoản (nêu trong bảng tác nhân, đặc tả do nhóm chốt tối thiểu) | Quản lý | Duy |
+
+QT-07 (ngoài UC): Quản lý hàng hóa/tồn kho — quản lý thêm và cập nhật tên, đơn vị tính, số lượng tồn, mức tồn tối thiểu; bảng đánh dấu hàng cần bổ sung.
 
 Bổ sung ngoài đặc tả UC nhưng có trong sơ đồ luồng Word: **Thanh toán dịch vụ cuối lượt** (Lễ tân) và **Lịch sử khám** (Bác sĩ/Quản lý).
 
@@ -117,7 +117,7 @@ PTUD_N15_/
 ├── SourceCode/                     ← toàn bộ mã nguồn (Maven)
 │   ├── pom.xml                     ← JDK 21, JavaFX 21, mssql-jdbc; Duy giữ quyền sửa
 │   ├── DATA/
-│   │   ├── schema/                 ← 000_hatang.sql … 012_*.sql (mỗi file một chủ)
+│   │   ├── schema/                 ← 000_hatang.sql … 013_*.sql (mỗi file một chủ)
 │   │   ├── seed/                   ← dữ liệu mẫu đi kèm từng schema
 │   │   └── README.md               ← hướng dẫn chạy SQL + cấu hình máy
 │   └── src/                        ← package phẳng Y CHANG Nhóm 11 (connectDB/dao/entity/gui/main/pic)
@@ -153,10 +153,10 @@ PTUD_N15_/
 | `GD_KhamBenh.fxml` | UC004 | Thắng |
 | `GD_LichSuKham.fxml` | lịch sử khám (sơ đồ luồng Word) | Thắng |
 | `GD_QLNhanVien.fxml` | UC010 | Duy |
+| `GD_QLHangHoa.fxml` | QT-07 — danh mục hàng hóa/tồn kho | Duy |
 | `GD_QLDichVu.fxml` | UC007 | Duy |
 | `GD_ThanhToan.fxml` | thanh toán cuối lượt (sơ đồ luồng Word) | Huy |
 | `GD_BaoCao.fxml` | UC008 | Duy |
-| `GD_DuBaoVatTu.fxml` | AI dự báo vật tư (ngoài UC — theo khởi nghiệp) | Duy |
 
 ## 5. Cơ sở dữ liệu (theo báo cáo Chương 4 — 12 bảng)
 
@@ -173,7 +173,7 @@ Quy ước chính (chi tiết đầy đủ trong [TaiLieu/README_RULES.md](TaiLi
 1. **JDK 21** — cài Temurin JDK 21 (tick *Set JAVA_HOME*), `java -version` phải báo 21.
 2. **SQL Server + SSMS** — bật **TCP/IP 1433** trong SQL Server Configuration Manager và restart dịch vụ; bật **SQL Server + Windows Authentication mode**; enable user `sa`.
 3. **VS Code** — cài Extension Pack for Java + Maven for Java; **Scene Builder** (Gluon) để mở FXML.
-4. **Tạo DB** — trong SSMS (hoặc Git Bash `cd SourceCode/DATA` rồi vòng lặp sqlcmd theo `DATA/README.md`): chạy `schema/000_hatang.sql` → `012_*.sql` rồi `seed/*.sql`.
+4. **Tạo DB** — trong SSMS (hoặc Git Bash `cd SourceCode/DATA` rồi vòng lặp sqlcmd theo `DATA/README.md`): chạy `schema/000_hatang.sql` → `013_*.sql` rồi `seed/*.sql`.
 5. **Cấu hình kết nối** — copy `SourceCode/src/db.properties.example` thành `db.properties`, sửa mật khẩu `sa` (file thật không commit).
 6. **Chạy app** — mở thư mục `SourceCode` trong VS Code (hoặc terminal `cd SourceCode`): `mvn clean compile` rồi `mvn javafx:run`.
 7. **Đăng nhập thử** — `letan / 123456` (các tài khoản seed xem `TaiLieu/../SourceCode/DATA/seed/002_seed_nhanvien_taikhoan.sql`).
