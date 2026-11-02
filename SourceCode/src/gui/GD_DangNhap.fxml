@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.geometry.Insets?>
+<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="gui.GD_DangNhap_Controller" styleClass="login-root"
+      prefWidth="1000" prefHeight="620">
+    <children>
+      <HBox>
+        <children>
+        <!-- Panel trai: anh thuong hieu trong CSS -->
+        <VBox styleClass="login-left" prefWidth="440" HBox.hgrow="ALWAYS"/>
+        <!-- Form dang nhap theo Figma -->
+        <VBox styleClass="login-card" HBox.hgrow="ALWAYS">
+            <children>
+                <Label text="Chào mừng bạn trở lại" styleClass="login-title"/>
+                <Label text="Đăng nhập để tiếp tục sử dụng hệ thống" styleClass="login-sub"/>
+                <Region prefHeight="10"/>
+                <HBox styleClass="input-group" maxWidth="360">
+                    <ImageView fitWidth="18" fitHeight="18" preserveRatio="true">
+                        <image><Image url="@../pic/icon_user.png"/></image>
+                    </ImageView>
+                    <TextField fx:id="txt_taiKhoan" promptText="Nhập tên đăng nhập" HBox.hgrow="ALWAYS"/>
+                </HBox>
+                <HBox styleClass="input-group" maxWidth="360">
+                    <ImageView fitWidth="18" fitHeight="18" preserveRatio="true">
+                        <image><Image url="@../pic/icon_lock.png"/></image>
+                    </ImageView>
+                    <PasswordField fx:id="txt_matKhau" promptText="Nhập mật khẩu" HBox.hgrow="ALWAYS"/>
+                    <TextField fx:id="txt_matKhauHien" promptText="Nhập mật khẩu" visible="false" managed="false" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btn_eye" styleClass="input-icon-btn" onAction="#anHienMatKhau">
+                        <graphic>
+                            <ImageView fx:id="img_eye" fitWidth="18" fitHeight="18" preserveRatio="true">
+                                <image><Image url="@../pic/icon_eye.png"/></image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                </HBox>
+                <HBox maxWidth="360" alignment="CENTER_RIGHT">
+                    <Label text="Quên mật khẩu?" styleClass="link-quenmk" onMouseClicked="#quenMatKhau"/>
+                </HBox>
+                <Region prefHeight="6"/>
+                <Button fx:id="btn_dangNhap" text="Đăng nhập" onAction="#dangNhap" maxWidth="360" prefHeight="42" defaultButton="true" styleClass="btn-primary"/>
+                <Label fx:id="lb_thongBao" style="-fx-text-fill: #C0392B;" wrapText="true" maxWidth="360"/>
+            </children>
+        </VBox>
+        </children>
+      </HBox>
+      <Button onAction="#dongUngDung" styleClass="app-close-btn" accessibleText="Đóng ứng dụng" StackPane.alignment="TOP_RIGHT">
+          <graphic><SVGPath content="M 12 2 L 12 11 M 5.1 5.1 A 10 10 0 1 0 18.9 5.1" styleClass="power-icon"/></graphic>
+          <StackPane.margin><Insets top="12" right="12"/></StackPane.margin>
+      </Button>
+    </children>
+</StackPane>

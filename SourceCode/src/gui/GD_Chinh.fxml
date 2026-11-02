@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.shape.SVGPath?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.GD_Chinh_Controller" prefWidth="1080" prefHeight="680">
+    <top>
+        <HBox styleClass="header" spacing="10">
+            <ImageView fitWidth="52" fitHeight="52" preserveRatio="true">
+                <image><Image url="@../pic/logo_glow.png"/></image>
+            </ImageView>
+            <VBox spacing="0" alignment="CENTER_LEFT">
+                <Label text="NHA KHOA SÀI GÒN" styleClass="brand-name"/>
+                <Label text="DENTAL CLINIC" styleClass="brand-sub"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="lb_avatar" styleClass="avatar" text="?"/>
+            <VBox spacing="0">
+                <Label fx:id="lb_chipTen" styleClass="chip-name"/>
+                <Label fx:id="lb_chipVaiTro" styleClass="chip-role"/>
+            </VBox>
+            <Button onAction="#dongUngDung" styleClass="app-close-btn" accessibleText="Đóng ứng dụng">
+                <graphic><SVGPath content="M 12 2 L 12 11 M 5.1 5.1 A 10 10 0 1 0 18.9 5.1" styleClass="power-icon"/></graphic>
+            </Button>
+        </HBox>
+    </top>
+    <left>
+        <VBox styleClass="sidebar" spacing="4">
+            <children>
+                <Label text="CHỨC NĂNG" styleClass="menu-caption"/>
+                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" VBox.vgrow="ALWAYS" styleClass="menu-scroll">
+                    <content><VBox fx:id="vb_menu" spacing="2"/></content>
+                </ScrollPane>
+                <Button fx:id="btn_dangXuat" text="Đăng xuất" onAction="#dangXuat" styleClass="logout-btn">
+                    <graphic><ImageView fitWidth="20" fitHeight="20" preserveRatio="true"><image><Image url="@../pic/icon_logout.png"/></image></ImageView></graphic>
+                </Button>
+            </children>
+        </VBox>
+    </left>
+    <center>
+        <!-- Khung noi dung: bam menu thi FXML tuong ung duoc nap vao day (1 cua so duy nhat) -->
+        <StackPane fx:id="khungNoiDung"/>
+    </center>
+</BorderPane>

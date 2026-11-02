@@ -1,0 +1,107 @@
+package dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import connectDB.ConnectDB;
+import entity.HoaDon;
+
+public class HoaDon_DAO {
+
+    private static final String COLS = "hd.maHoaDon, hd.ngayThu, hd.hinhThucThanhToan, hd.daThanhToan,"
+            + " hd.tienKhachDua, hd.maBenhNhan, hd.maNhanVien, hd.maPhieuKham, bn.hoTen AS tenBenhNhan,"
+            + " (SELECT SUM(ct.thanhTien) FROM ChiTietHoaDon ct WHERE ct.maHoaDon = hd.maHoaDon) AS tongTien";
+
+    private static HoaDon map(ResultSet rs) throws SQLException {
+        HoaDon hd = new HoaDon();
+        hd.setMaHoaDon(rs.getString("maHoaDon"));
+        Timestamp ts = rs.getTimestamp("ngayThu");
+        hd.setNgayThu(ts == null ? null : ts.toLocalDateTime());
+        hd.setHinhThucThanhToan(rs.getString("hinhThucThanhToan"));
+        hd.setDaThanhToan(rs.getBoolean("daThanhToan"));
+        hd.setTienKhachDua(rs.getBigDecimal("tienKhachDua"));
+        hd.setMaBenhNhan(rs.getString("maBenhNhan"));
+        hd.setMaNhanVien(rs.getString("maNhanVien"));
+        hd.setMaPhieuKham(rs.getString("maPhieuKham"));
+        hd.setTenBenhNhan(rs.getString("tenBenhNhan"));
+        hd.setTongTien(rs.getBigDecimal("tongTien"));
+        return hd;
+    }
+
+    public static void themHoaDon(Connection con, HoaDon hd) throws SQLException {
+        String sql = "INSERT INTO HoaDon (maHoaDon, ngayThu, hinhThucThanhToan, daThanhToan, tienKhachDua,"
+                + " maBenhNhan, maNhanVien, maPhieuKham) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, hd.getMaHoaDon());
+            pstm.setTimestamp(2, Timestamp.valueOf(hd.getNgayThu()));
+            pstm.setString(3, hd.getHinhThucThanhToan());
+            pstm.setBoolean(4, hd.isDaThanhToan());
+            pstm.setBigDecimal(5, hd.getTienKhachDua());
+            pstm.setString(6, hd.getMaBenhNhan());
+            pstm.setString(7, hd.getMaNhanVien());
+            pstm.setString(8, hd.getMaPhieuKham());
+            pstm.executeUpdate();
+        }
+    }
+
+    public static HoaDon layHoaDonTheoMa(String maHoaDon) {
+        String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " WHERE hd.maHoaDon = ?";
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, maHoaDon);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn HoaDon", ex);
+        }
+        return null;
+    }
+
+    /** Hoa don phi kham (DV0001) da thanh toan, CHUA gan phieu kham nao - de chan thu trung / dung lai. */
+    public static HoaDon layHoaDonPhiChuaDungTheoBN(String maBenhNhan) {
+        String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " JOIN ChiTietHoaDon ct ON ct.maHoaDon = hd.maHoaDon AND ct.maDichVu = 'DV0001'"
+                + " WHERE hd.maBenhNhan = ? AND hd.daThanhToan = 1"
+                + " AND NOT EXISTS (SELECT 1 FROM PhieuKham pk WHERE pk.maHoaDonPhiKham = hd.maHoaDon)"
+                + " ORDER BY hd.ngayThu DESC";
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, maBenhNhan);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn hóa đơn phí khám", ex);
+        }
+        return null;
+    }
+
+    /** Hoa don dich vu da lien ket voi mot luot kham (kiem tra da thanh toan chua). */
+    public static HoaDon layHoaDonTheoPhieu(String maPhieuKham) {
+        String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " WHERE hd.maPhieuKham = ?";
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, maPhieuKham);
+            try (ResultSet rs = pstm.executeQuery()) {
+                if (rs.next()) {
+                    return map(rs);
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn hóa đơn theo phiếu", ex);
+        }
+        return null;
+    }
+
+    private HoaDon_DAO() { }
+}

@@ -164,6 +164,7 @@ try {
 | SĐT | regex `^0\d{9}$` (10 số, đầu 0) | VL02 |
 | CCCD | regex `^\d{12}$` (có nhập mới kiểm) | VL03 |
 | Ngày sinh | không sau ngày hiện tại | VL04 |
+| Ngày sinh nhân viên | đủ 18 tuổi khi thêm và sửa, áp dụng mọi chức vụ | VL14 |
 | Tiền/giá | `> 0` | VL06 |
 | Số lượng | số nguyên `>= 1` | VL12 |
 | Khoảng thời gian báo cáo | từNgay ≤ đếnNgay | VL10 |
@@ -257,6 +258,7 @@ GUI hiển thị đúng chuỗi dưới đây; chuỗi nằm trong `util/MaThong
 | VL11 | `Vui lòng chọn dịch vụ cần chỉ định.` |
 | VL12 | `Số lượng phải là số nguyên dương.` |
 | VL13 | `Vui lòng nhập tên đăng nhập và mật khẩu.` |
+| VL14 | `Nhân viên phải đủ 18 tuổi.` |
 
 **Khuôn Alert chung (dùng `AlertUtil`):** lỗi validate/nghiệp vụ → `ERROR` với message theo mã; thao tác thành công → `INFORMATION` "Thực hiện thành công." + tên thao tác; xóa/hủy → `CONFIRMATION` "Bạn có chắc muốn xóa …?" + `showAndWait()` kiểm `ButtonType.OK` trước khi gọi BUS. Chỉ GUI được mở Alert.
 

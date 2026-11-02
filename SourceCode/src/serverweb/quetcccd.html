@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quét CCCD — Nha khoa Sài Gòn</title>
+<style>
+  body { font-family: "Segoe UI", Arial, sans-serif; background:#F5F7FA; margin:0; padding:24px; }
+  .khung { max-width:520px; margin:0 auto; background:#fff; border:1px solid #E4EAF2;
+           border-radius:14px; padding:24px; box-shadow:0 4px 16px rgba(23,58,94,.08); }
+  h1 { color:#173A5E; font-size:22px; margin:0 0 4px; }
+  p.huongdan { color:#5D6D7E; font-size:14px; line-height:1.5; margin:8px 0 16px; }
+  label { display:block; font-weight:bold; color:#173A5E; margin:12px 0 4px; font-size:14px; }
+  input { width:100%; box-sizing:border-box; padding:12px; font-size:16px;
+          border:1px solid #C9D4E0; border-radius:8px; }
+  button { width:100%; margin-top:20px; padding:14px; font-size:17px; font-weight:bold;
+           background:#1D5C8F; color:#fff; border:0; border-radius:10px; cursor:pointer; }
+  button:active { background:#12314F; }
+  .ok { display:none; margin-top:14px; padding:12px; background:#E3F6EC; color:#1E7A46;
+        border-radius:8px; font-weight:bold; text-align:center; }
+</style>
+</head>
+<body>
+<div class="khung">
+  <h1>Quét CCCD → gửi về app</h1>
+  <p class="huongdan">
+    <b>Cách làm nhanh trên iPhone/Android:</b> mở <b>Camera</b> → đưa vào <b>mặt trước CCCD</b> →
+    máy tự nhận diện chữ (Live Text / Lens) → <b>chạm vào từng dòng chữ</b> để chép vào các ô dưới đây
+    (Họ và tên, Số CCCD, Ngày sinh) → bấm <b>Gửi tới app</b>. Nhân viên quầy sẽ rà lại một lần nữa.
+  </p>
+  <label>Họ và tên</label>
+  <input id="hoTen" placeholder="Dán/Mở rộng từ Live Text">
+  <label>Số CCCD (12 số)</label>
+  <input id="cccd" inputmode="numeric" maxlength="12" placeholder="12 chữ số trên thẻ">
+  <label>Ngày sinh (dd/MM/yyyy)</label>
+  <input id="ngaySinh" inputmode="numeric" placeholder="vd: 01/01/2000">
+  <label>Địa chỉ</label>
+  <input id="diaChi" placeholder="Địa chỉ trên thẻ (nếu có)">
+  <button onclick="gui()">Gửi tới app</button>
+  <div class="ok" id="thongBao">✓ Đã gửi tới app — nhân viên sẽ kiểm tra và lưu.</div>
+</div>
+<script>
+function gui() {
+  const d = {
+    hoTen: document.getElementById('hoTen').value.trim(),
+    cccd: document.getElementById('cccd').value.trim(),
+    ngaySinh: document.getElementById('ngaySinh').value.trim(),
+    diaChi: document.getElementById('diaChi').value.trim()
+  };
+  if (!d.hoTen || !/^\d{12}$/.test(d.cccd)) {
+    alert('Cần nhập đủ Họ và tên + CCCD 12 chữ số.');
+    return;
+  }
+  fetch('/api/cccd', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'},
+    body: new URLSearchParams(d).toString()
+  }).then(() => {
+    const tb = document.getElementById('thongBao');
+    tb.style.display = 'block';
+    setTimeout(() => tb.style.display = 'none', 4000);
+  }).catch(e => alert('Không gửi được: ' + e));
+}
+</script>
+</body>
+</html>
