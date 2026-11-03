@@ -6,6 +6,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -25,10 +26,13 @@
             <TextField fx:id="txt_cccd" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
             <Label text="Địa chỉ" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
             <TextField fx:id="txt_diaChi" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-            <Label text="Tiền sử dị ứng" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_tienSuDiUng" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+            <Label text="Tiền sử dị ứng" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+            <TextArea fx:id="txt_tienSuDiUng" prefRowCount="5" wrapText="true"
+                      promptText="Ghi rõ dị ứng và phản ứng nếu có"
+                      GridPane.rowIndex="5" GridPane.columnIndex="1"/>
             <HBox spacing="8" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2">
-                <Button fx:id="btn_quetCCCD" text="Quét CCCD bằng điện thoại" onAction="#quetCCCD" styleClass="btn-primary"/>
+                <!-- TINH NANG PHAT TRIEN TIEP: Quet CCCD bang dien thoai (server + Live Text) - an tam -->
+                <!--                 <Button fx:id="btn_quetCCCD" text="Quét CCCD bằng điện thoại" onAction="#quetCCCD" styleClass="btn-primary"/> -->
                 <Button fx:id="btn_them" text="Thêm" onAction="#them" defaultButton="true"/>
                 <Button fx:id="btn_sua" text="Sửa" onAction="#sua"/>
                 <Button fx:id="btn_lamMoi" text="Làm mới" onAction="#lamMoi"/>
@@ -37,6 +41,12 @@
     </left>
     <center>
         <VBox spacing="8" styleClass="center-pane">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <TextField fx:id="txt_timSDT" prefWidth="260" promptText="Tìm chính xác theo số điện thoại"
+                           onAction="#timTheoSDT"/>
+                <Button text="Tìm SĐT" onAction="#timTheoSDT"/>
+                <Button text="Hiện tất cả" onAction="#hienTatCa"/>
+            </HBox>
             <TableView fx:id="table_benhNhan" prefHeight="480" VBox.vgrow="ALWAYS">
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 <columns>

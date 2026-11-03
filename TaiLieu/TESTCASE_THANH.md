@@ -1,7 +1,7 @@
 # BỘ TEST CASE — PHAN CHÍ THANH (24738801) — LUỒNG PHỤ TÁ + HẠ TẦNG
 
-> Phạm vi: UC009 Hàng chờ/gọi số/vào khám · AI dự đoán thời gian chờ · Quản lý phòng · Hạ tầng CSDL/ConnectDB/BoDem.
-> Backend liên quan: TestRunner T13–T16, T32 (34/34 PASS).
+> Phạm vi: UC009 Hàng chờ/gọi số/vào khám · Quản lý phòng · Hạ tầng CSDL/ConnectDB/BoDem.
+> Backend liên quan: TestRunner T13–T16, T32.
 
 ## TC-T01 — Theo dõi hàng chờ (UC009)
 
@@ -9,7 +9,6 @@
 | --- | --- | --- | --- | --- |
 | T01-1 | Mở "Hàng chờ" chọn phòng P001 | Hàng chờ hiện các phiếu CHO_KHAM hôm nay theo STT; tự refresh 10 giây | | |
 | T01-2 | Chọn phòng không có phiếu chờ | Không lỗi; thông báo `TB07` khi tải lại | | |
-| T01-3 | Chọn 1 bệnh nhân | Banner **"AI dự đoán thời gian chờ: ~X phút"** hiện đúng theo vị trí (người đầu ≈ 5 phút + lượt đang khám) | | |
 | T01-4 | **Gọi số** | Bảng số nhảy STT; trạng thái phiếu **vẫn** CHO_KHAM trong DB | | |
 | T01-5 | **Xác nhận vào khám** | Phiếu chuyển DANG_KHAM, rời hàng chờ sang bảng đang khám | | |
 | T01-6 | Xác nhận vào khám lại phiếu đó | Alert `TB10` | | |

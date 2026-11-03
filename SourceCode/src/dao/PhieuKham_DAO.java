@@ -12,6 +12,21 @@ import entity.TrangThaiPhieuKham;
 
 public class PhieuKham_DAO {
 
+    public static boolean tonTaiMa(Connection con, String ma) throws SQLException {
+        try (PreparedStatement p = con.prepareStatement("SELECT 1 FROM PhieuKham WHERE maPhieuKham = ?")) {
+            p.setString(1, ma);
+            try (ResultSet rs = p.executeQuery()) { return rs.next(); }
+        }
+    }
+
+    public static boolean tonTaiSoThuTu(Connection con, java.time.LocalDate ngay, String maPhong, int stt) throws SQLException {
+        String sql = "SELECT 1 FROM PhieuKham WHERE ngayKham = ? AND maPhong = ? AND soThuTu = ?";
+        try (PreparedStatement p = con.prepareStatement(sql)) {
+            p.setDate(1, Date.valueOf(ngay)); p.setString(2, maPhong); p.setInt(3, stt);
+            try (ResultSet rs = p.executeQuery()) { return rs.next(); }
+        }
+    }
+
     private static final String COLS = "pk.maPhieuKham, pk.ngayKham, pk.soThuTu, pk.lyDoKham, pk.chanDoan,"
             + " pk.ketQuaDieuTri, pk.ghiChuThuocSuDung, pk.ghiChuThuocTuMua, pk.trangThai, pk.maBenhNhan,"
             + " pk.maNhanVien, pk.maPhong, pk.maHoSo, pk.maHoaDonPhiKham, bn.hoTen AS tenBenhNhan, nv.hoTen AS tenBacSi,"
@@ -194,10 +209,11 @@ public class PhieuKham_DAO {
         return ds;
     }
 
-    /** Phieu HOAN_TAT chua co hoa don dich vu - cho man hinh Thanh toan. */
+    /** Phieu HOAN_TAT co dich vu phat sinh va chua co hoa don dich vu. */
     public static ArrayList<PhieuKham> layPhieuHoanTatChuaThanhToan() {
         String sql = "SELECT " + COLS + JOINS
                 + " WHERE pk.trangThai = 'HOAN_TAT'"
+                + " AND EXISTS (SELECT 1 FROM ChiDinhDichVu cd WHERE cd.maPhieuKham = pk.maPhieuKham)"
                 + " AND NOT EXISTS (SELECT 1 FROM HoaDon hd WHERE hd.maPhieuKham = pk.maPhieuKham)"
                 + " ORDER BY pk.ngayKham DESC";
         ArrayList<PhieuKham> ds = new ArrayList<>();

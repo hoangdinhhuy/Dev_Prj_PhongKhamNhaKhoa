@@ -40,7 +40,9 @@ public class NhanVien_BUS {
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
-            String maNV = BoDem_DAO.layMaMoi(con, "NV", LocalDate.now());
+            String maNV;
+            do { maNV = BoDem_DAO.layMaMoi(con, "NV", LocalDate.now()); }
+            while (NhanVien_DAO.tonTaiMa(con, maNV));
             NhanVien nv = new NhanVien(maNV, ten, sdt, ngaySinh, gioiTinh, cmnd, chucVu, true);
             NhanVien_DAO.themNhanVien(con, nv);
             con.commit();

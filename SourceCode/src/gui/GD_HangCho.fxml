@@ -42,10 +42,9 @@
                     <TableColumn fx:id="cl_lyDo2" text="Lý do khám" prefWidth="240"/>
                 </columns>
             </TableView>
-            <Label fx:id="lb_aiDuDoan" styleClass="info-banner" wrapText="true"
-                   text="AI dự đoán thời gian chờ: chọn một bệnh nhân trong hàng chờ để xem ước tính."/>
             <HBox spacing="10">
                 <Button fx:id="btn_goSo" text="Gọi số" onAction="#goiSo"/>
+                <Button fx:id="btn_goiLai" text="Gọi lại" onAction="#goiLai" disable="true"/>
                 <Button fx:id="btn_xacNhanVaoKham" text="Xác nhận vào khám" onAction="#xacNhanVaoKham"/>
             </HBox>
         </VBox>

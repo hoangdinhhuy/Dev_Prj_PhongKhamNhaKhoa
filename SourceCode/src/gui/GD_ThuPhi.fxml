@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -12,7 +14,8 @@
             fx:controller="gui.GD_ThuPhi_Controller" prefWidth="720" prefHeight="420">
     <top><HBox styleClass="header" alignment="CENTER_LEFT" spacing="14"><Label text="Thu tiền phí khám ban đầu" styleClass="page-title"/><Region HBox.hgrow="ALWAYS"/></HBox></top>
     <center>
-        <VBox styleClass="card" spacing="10" maxWidth="Infinity"><GridPane hgap="10" vgap="10" maxWidth="Infinity">
+        <HBox spacing="16" styleClass="page-content" fillHeight="true">
+        <VBox styleClass="card" spacing="10" maxWidth="Infinity" HBox.hgrow="ALWAYS"><GridPane hgap="10" vgap="10" maxWidth="Infinity">
             <Label text="Mã BN / SĐT" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
             <TextField fx:id="txt_timBN" prefWidth="280" GridPane.rowIndex="0" GridPane.columnIndex="1"
                        promptText="BN... hoặc 090..."/>
@@ -20,7 +23,7 @@
             <Label text="Bệnh nhân" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
             <Label fx:id="lb_thongTinBN" text="(chưa chọn)" GridPane.rowIndex="1" GridPane.columnIndex="1"
                    GridPane.columnSpan="2" style="-fx-font-weight: bold;"/>
-            <Label text="Mức phí khám" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <Label text="Phí khám niêm yết" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
             <Label fx:id="lb_mucPhi" text="(đang nạp)" GridPane.rowIndex="2" GridPane.columnIndex="1"
                    GridPane.columnSpan="2"/>
             <Label text="Hình thức" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
@@ -31,9 +34,22 @@
             <Label fx:id="lb_tienThua" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
             <HBox spacing="10" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="3">
                 <Button fx:id="btn_thuPhi" text="Thu phí" onAction="#thuPhi" defaultButton="true"/>
-                <Button fx:id="btn_dungHoaDonCoSan" text="Dùng hóa đơn đã thu" onAction="#dungHoaDonDaThu"/>
+                <Button fx:id="btn_xemHoaDon" text="Xem/In hóa đơn" onAction="#xemHoaDon" disable="true"/>
             </HBox>
             <Label fx:id="lb_hoaDon" wrapText="true" GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="3"/>
         </GridPane></VBox>
+        <VBox fx:id="khungHoaDon" spacing="10" styleClass="card" prefWidth="820" minWidth="560"
+              visible="false" managed="false" HBox.hgrow="ALWAYS">
+            <Label text="HÓA ĐƠN PHÍ KHÁM" styleClass="section-title"/>
+            <ScrollPane fx:id="scrollHoaDon" fitToWidth="true" pannable="true" VBox.vgrow="ALWAYS">
+                <content><VBox fx:id="noiDungHoaDon" alignment="TOP_CENTER"/></content>
+            </ScrollPane>
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+                <Button text="Lưu PDF" onAction="#luuHoaDonPdf" styleClass="print-action-btn"/>
+                <Button text="In hóa đơn" onAction="#inHoaDon" styleClass="print-action-btn"/>
+                <Button text="Đóng" onAction="#dongHoaDon" styleClass="print-action-btn"/>
+            </HBox>
+        </VBox>
+        </HBox>
     </center>
 </BorderPane>

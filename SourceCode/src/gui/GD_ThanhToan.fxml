@@ -31,7 +31,7 @@
         </VBox>
     </left>
     <center>
-        <VBox spacing="10" styleClass="center-pane">
+        <VBox fx:id="khungNoiDung" spacing="10" styleClass="center-pane">
             <VBox styleClass="card" spacing="8">
                 <Label text="CHI TIẾT LƯỢT KHÁM" styleClass="card-title"/>
                 <Label fx:id="lb_thongTin" text="(chưa chọn lượt khám)" style="-fx-font-weight: bold;"/>

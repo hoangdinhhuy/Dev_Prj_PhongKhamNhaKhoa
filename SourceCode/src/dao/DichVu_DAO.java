@@ -71,6 +71,13 @@ public class DichVu_DAO {
         }
     }
 
+    public static boolean tonTaiMa(Connection con, String ma) throws SQLException {
+        try (PreparedStatement p = con.prepareStatement("SELECT 1 FROM DichVu WHERE maDichVu = ?")) {
+            p.setString(1, ma);
+            try (ResultSet rs = p.executeQuery()) { return rs.next(); }
+        }
+    }
+
     public static void suaDichVu(Connection con, DichVu dv) throws SQLException {
         String sql = "UPDATE DichVu SET tenDichVu = ?, donGiaNiemYet = ?, trangThai = ? WHERE maDichVu = ?";
         try (PreparedStatement pstm = con.prepareStatement(sql)) {

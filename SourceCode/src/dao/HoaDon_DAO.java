@@ -47,6 +47,17 @@ public class HoaDon_DAO {
         }
     }
 
+    /** Bỏ qua mã đã có khi bộ đếm chưa đồng bộ với dữ liệu hóa đơn cũ. */
+    public static boolean tonTaiMa(Connection con, String maHoaDon) throws SQLException {
+        String sql = "SELECT 1 FROM HoaDon WHERE maHoaDon = ?";
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, maHoaDon);
+            try (ResultSet rs = pstm.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public static HoaDon layHoaDonTheoMa(String maHoaDon) {
         String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
                 + " WHERE hd.maHoaDon = ?";

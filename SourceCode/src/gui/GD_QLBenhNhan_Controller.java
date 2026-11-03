@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import main.App;
@@ -29,7 +30,8 @@ public class GD_QLBenhNhan_Controller {
     @FXML private TextField txt_sdt;
     @FXML private TextField txt_cccd;
     @FXML private TextField txt_diaChi;
-    @FXML private TextField txt_tienSuDiUng;
+    @FXML private TextArea txt_tienSuDiUng;
+    @FXML private TextField txt_timSDT;
     @FXML private DatePicker dp_ngaySinh;
     @FXML private Button btn_them;
     @FXML private Button btn_sua;
@@ -69,6 +71,28 @@ public class GD_QLBenhNhan_Controller {
         var ds = BenhNhan_BUS.danhSachToanBo(App.session);
         table_benhNhan.getItems().clear();
         table_benhNhan.setItems(FXCollections.observableArrayList(ds));
+    }
+
+    @FXML
+    private void timTheoSDT() {
+        String sdt = txt_timSDT.getText() == null ? "" : txt_timSDT.getText().trim();
+        if (sdt.isEmpty()) {
+            loadTableData();
+            return;
+        }
+        try {
+            var ds = BenhNhan_BUS.traCuu(App.session, "SĐT", sdt);
+            table_benhNhan.getItems().setAll(ds);
+            table_benhNhan.getSelectionModel().clearSelection();
+        } catch (RuntimeException ex) {
+            AlertUtil.baoLoi(ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void hienTatCa() {
+        txt_timSDT.clear();
+        loadTableData();
     }
 
 

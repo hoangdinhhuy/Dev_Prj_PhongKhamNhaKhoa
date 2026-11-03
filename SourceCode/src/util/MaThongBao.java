@@ -22,6 +22,8 @@ public final class MaThongBao {
     public static final String TB15 = "Dịch vụ đã ngừng phục vụ, không thể chỉ định.";
     public static final String TB16 = "Bệnh nhân này đã có hồ sơ bệnh án.";
     public static final String TB17 = "Lượt khám này đã được thanh toán.";
+    public static final String TB18 = "Tên hàng hóa đã tồn tại.";
+    public static final String TB19 = "Không tìm thấy hàng hóa cần cập nhật. Vui lòng tải lại danh sách.";
 
     // Thong bao kiem tra du lieu
     public static final String VL01 = "Họ tên không được để trống.";
@@ -38,4 +40,8 @@ public final class MaThongBao {
     public static final String VL12 = "Số lượng phải là số nguyên dương.";
     public static final String VL13 = "Vui lòng nhập tên đăng nhập và mật khẩu.";
     public static final String VL14 = "Nhân viên phải đủ 18 tuổi.";
+    public static final String VL15 = "Tên hàng hóa không được để trống.";
+    public static final String VL16 = "Đơn vị tính không được để trống.";
+    public static final String VL17 = "Tên hàng hóa hoặc đơn vị tính quá dài.";
+    public static final String VL18 = "Số lượng tồn và mức tồn tối thiểu phải là số nguyên không âm.";
 }

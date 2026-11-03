@@ -10,8 +10,8 @@
 | --- | --- | --- |
 | P1 | Cài JDK 21 + Maven (hoặc VS Code + Extension Pack for Java); cài SQL Server Express + SSMS | `java -version` báo 21; `mvn -v` chạy được |
 | P2 | Bật TCP/IP 1433 trong SQL Server Configuration Manager, restart dịch vụ; bật SQL auth + user `sa` | `sqlcmd -S localhost -U sa -P <mật khẩu> -Q "SELECT 1"` trả về 1 |
-| P3 | Trong SSMS chạy `SourceCode/DATA/schema/000_hatang.sql` → `010_*.sql` đúng thứ tự | Mỗi file in ra "… OK"; có 13 bảng trong `N15_PTUD_DB` (12 bảng nghiệp vụ + `BoDem`) |
-| P4 | Chạy `SourceCode/DATA/seed/001_…` → `010_…` đúng thứ tự | Mỗi file in ra "… OK"; `PhieuKham` có 6 phiếu (4 hôm nay, 2 hôm qua) |
+| P3 | Trong SSMS chạy `SourceCode/DATA/schema/000_hatang.sql` → `013_hanghoa.sql` đúng thứ tự | Mỗi file in ra "… OK"; có thêm bảng `HangHoa` trong `N15_PTUD_DB` |
+| P4 | Chạy `SourceCode/DATA/seed/001_…` → `013_seed_hanghoa.sql` đúng thứ tự | `PhieuKham` có dữ liệu demo; `HangHoa` có 6 mặt hàng mẫu |
 | P5 | Copy `src/db.properties.example` thành `db.properties`, sửa `db.password` | File tồn tại, KHÔNG hiện trong `git status` |
 | P6 | Tại thư mục gốc chạy `mvn clean compile` rồi `mvn javafx:run` | Mở màn hình **Đăng nhập** (nếu lỗi kết nối → xem lại P2–P5) |
 
@@ -41,22 +41,24 @@
 | 1.1 | Để trống cả hai ô, bấm Đăng nhập | Alert VL13 | | |
 | 1.2 | `letan` / mật khẩu sai | Alert TB01, ở lại màn đăng nhập | | |
 | 1.3 | `lockacc` / `123456` | Alert TB02 "Tài khoản của bạn đã bị khóa." | | |
-| 1.4 | `letan` / `123456` | Vào GD_Chinh; menu có: Tổng quan, Hồ sơ bệnh nhân, Tra cứu hồ sơ bệnh nhân, Thu lệ phí khám, Thanh toán dịch vụ, Lập phiếu khám | | |
+| 1.4 | `letan` / `123456` | Vào GD_Chinh; menu có: Tổng quan, Hồ sơ bệnh nhân, Tra cứu hồ sơ bệnh nhân, Thu lệ phí khám, Lập phiếu khám, Thanh toán dịch vụ | | |
 | 1.5 | Đăng xuất → `bacsi1` / `123456` | Menu có: Tổng quan, Khám và chẩn đoán, Lịch sử khám | | |
 | 1.6 | Đăng xuất → `phuta` / `123456` | Menu có: Tổng quan, Hàng chờ theo phòng | | |
-| 1.7 | Đăng xuất → `quanly` / `123456` | Menu có: Tổng quan, Quản lý nhân viên, Quản lý dịch vụ, Báo cáo lượt khám, AI dự báo vật tư (chức năng bổ sung); không có Tra cứu hồ sơ bệnh nhân, Hàng chờ theo phòng, Lịch sử khám | | |
+| 1.7 | Đăng xuất → `quanly` / `123456` | Menu có: Tổng quan, Quản lý hàng hóa, Quản lý nhân viên, Quản lý dịch vụ, Báo cáo lượt khám; không có Tra cứu hồ sơ bệnh nhân, Hàng chờ theo phòng, Lịch sử khám. Phân tích AI nằm trong màn Quản lý hàng hóa | | |
 | 1.8 | DB: `SELECT matKhau FROM TaiKhoan WHERE tenDangNhap='letan'` | Giá trị là hash 64 ký tự, không phải "123456" | | |
 
 ## S2 — UC002: Quản lý hồ sơ bệnh nhân (đăng nhập `letan`)
 
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
+| 2.0 | Nhập số điện thoại vào ô tìm nhanh ở trên danh sách → Tìm SĐT; bấm Hiện tất cả | Bảng lọc đúng hồ sơ theo SĐT; Hiện tất cả tải lại danh sách đầy đủ; không mở lịch sử khám (UC006) | | |
 | 2.1 | Mở QL hồ sơ, bấm Thêm khi bỏ trống họ tên | Alert VL01 | | |
 | 2.2 | Nhập đủ, SĐT `0901111` (7 số) | Alert VL02 | | |
 | 2.3 | SĐT hợp lệ, CCCD `12345678901` (11 số) | Alert VL03 | | |
 | 2.4 | Ngày sinh = ngày mai | Alert VL04 | | |
 | 2.5 | Nhập hợp lệ, CCCD = `079199001001` (của BN seed 0001) | Alert TB13 | | |
-| 2.6 | CCCD để trống, SĐT trùng `0901111001` | Hỏi "Vẫn tạo hồ sơ mới?" → Chọn **Có** | Tạo thành công, mã `BNyyMMdd0001`, hiện đầu bảng | | |
+| 2.6 | CCCD để trống, SĐT trùng `0901111001` | Hỏi "Vẫn tạo hồ sơ mới?" → Chọn **Có** | Tạo thành công, mã BN mới không trùng dữ liệu đã có, hiện đầu bảng | | |
+| 2.9 | Dữ liệu đã có mã BN đầu ngày nhưng bộ đếm chưa đồng bộ | Tạo hồ sơ hợp lệ | Tự bỏ qua mã đã tồn tại; mã mới theo mẫu `BNyyMMddNNNN`, không hiện lỗi PRIMARY KEY | | |
 | 2.7 | Click dòng vừa tạo → sửa họ tên → Sửa | Cập nhật thành công, bảng refresh | | |
 | 2.8 | Ngắt DB (tắt dịch vụ SQL) rồi bấm Thêm | Alert TB09, mở lại DB app vẫn chạy bình thường | | |
 
@@ -65,10 +67,12 @@
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
 | 3.1 | Bấm Thu phí khi chưa tìm BN | Alert VL05 | | |
+| 3.1a | Mở màn Thu phí khi chưa chọn bệnh nhân | Mức phí hiện lời nhắc chọn bệnh nhân; ô tiền khách đưa và tiền thừa trống | | |
 | 3.2 | Tìm `0901111004` (BN0004) — mức phí hiện 50.000 ₫ — nhập tiền khách đưa `30000` | Alert "Tiền khách đưa chưa đủ mức phí khám." | | |
 | 3.3 | Nhập `100000`, hình thức TIEN_MAT → Thu phí | Báo thành công, hiện "Đã thu: HDyyMMdd000x — 50.000 ₫" | | |
 | 3.4 | Bấm **Thu phí lần nữa** cho cùng BN | Alert TB04 "Bệnh nhân đã hoàn tất phí khám." | | |
-| 3.5 | Bấm "Dùng hóa đơn đã thu" | Hiện "Dùng hóa đơn đã thu: HD…", không phát sinh hóa đơn mới | | |
+| 3.5 | Sau khi thu phí, bấm "Xem/In hóa đơn" | Hóa đơn phí khám hiện ở panel bên phải, không che form; có thể lưu PDF, in hoặc đóng; không phát sinh hóa đơn mới | | |
+| 3.6 | Bộ đếm hóa đơn thấp hơn mã đã tồn tại trong ngày, sau đó thu phí bệnh nhân khác | Thu phí thành công với mã hóa đơn chưa tồn tại; không báo lỗi PRIMARY KEY | | |
 
 ## S4 — UC003: Lập phiếu khám (`letan`)
 
@@ -82,7 +86,7 @@
 | 4.6 | Chọn phòng P003 (tắt nhận bệnh) → Lập phiếu | Alert TB03 | | |
 | 4.7 | Gọi SP: khóa tài khoản `bacsi2` (S8.4), rồi lập phiếu chọn `bacsi2` | Alert TB03 | | |
 | 4.8 | Nhấn nút **Lập phiếu 2 lần liên tục nhanh** (cùng BN đã dùng phí → lần 2 sẽ chặn) | Lần 1 thành công; lần 2 Alert TB04 — không có phiếu trùng mã/STT | | |
-| 4.9 | Bấm "Xem phiếu" | Modal hiện đúng mã, STT, tên BN, bác sĩ, lý do | | |
+| 4.9 | Bấm "Xem / in phiếu PDF" | Bản xem trước hiện trong cột bên phải, không che ô nhập; có đúng mã, STT, tên BN, bác sĩ, lý do và các nút Lưu PDF/In phiếu/Đóng | | |
 
 ## S5 — UC009: Hàng chờ (`phuta`)
 
@@ -126,6 +130,16 @@
 | 7.5 | Đổi trạng thái DV0012 → NGUNG_PHUC_VU | Thành công; bac sĩ **không** chỉ định được DV này (S6.6) | | |
 | 7.6 | Đổi trạng thái DV0001 (Phí khám ban đầu) → NGUNG | ⚠️ Cho phép nhưng sẽ làm thu phí lỗi — khôi phục lại DANG_PHUC_VU ngay sau test | | |
 
+## QT-07 — Quản lý hàng hóa/tồn kho (`quanly`)
+
+| Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
+| --- | --- | --- | --- | --- |
+| QT07.1 | Mở “Quản lý hàng hóa” (trên “Quản lý nhân viên”) | Bảng hàng hóa hiển thị mã, tên, đơn vị, tồn kho, mức tối thiểu, tình trạng | | |
+| QT07.2 | Thêm “Găng tay y tế”, đơn vị “Hộp”, tồn 10, tối thiểu 5 | Tạo mã HH tự động, xuất hiện trong bảng, tình trạng “Đủ hàng” | | |
+| QT07.3 | Thêm lại cùng tên | Báo TB18, không tạo bản ghi trùng | | |
+| QT07.4 | Chọn hàng vừa thêm, sửa tồn thành 3 rồi cập nhật | Bảng hiển thị 3, tình trạng “Cần bổ sung” | | |
+| QT07.5 | Nhập tồn âm hoặc chữ | Báo VL18, dữ liệu cũ giữ nguyên | | |
+
 ## S8 — UC010: Quản lý nhân viên & tài khoản (`quanly`)
 
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
@@ -166,14 +180,13 @@
 | Mã | Tình huống | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
 | TC-S11-01 | `letan` → "Thanh toán dịch vụ" → chọn lượt khám đã HOAN_TAT (từ S6) | Panel phải hiện đúng các dịch vụ đã chỉ định + tổng tiền (đơn giá niêm yết) | | |
+| TC-S11-01a | Chọn lượt HOAN_TAT không có dịch vụ chỉ định | Lượt khám không xuất hiện trong danh sách chờ thanh toán dịch vụ; phí khám ban đầu đã thu ở UC005 không bị thu lại | | |
 | TC-S11-02 | Tiền khách đưa thiếu tổng | Báo "Tiền khách đưa chưa đủ để thanh toán." | | |
 | TC-S11-03 | Xác nhận thanh toán | Hóa đơn HDyyMMdd… tạo kèm chi tiết từng dịch vụ; lượt khám rời danh sách chờ thanh toán | | |
 | TC-S11-04 | Thanh toán lại cùng lượt khám | Báo TB17 "Lượt khám này đã được thanh toán." | | |
 | TC-S11-05 | `bacsi1` → "Lịch sử khám" | Bảng mọi lượt khám (badge màu theo trạng thái); tìm "Nguyễn" → lọc đúng | | |
 | TC-S11-06 | Double-click một dòng lịch sử | Hộp chi tiết: chẩn đoán, kết quả, thuốc tự mua, trạng thái | | |
-| TC-S11-07 | `letan` → "Lập phiếu khám" → Xem / in phiếu PDF | Bản xem trước phiếu tiếp nhận A4 có STT, phòng khám, thông tin bệnh nhân, bác sĩ, lý do, hướng dẫn và mã QR tra cứu; Lưu PDF tạo tệp mở được, In phiếu mở hộp chọn máy in | | |
-| TC-S11-08 | `phuta` → "Hàng chờ theo phòng" → chọn 1 bệnh nhân trong hàng chờ | Hiện banner "AI dự đoán thời gian chờ: ~X phút" (tính theo vị trí hàng chờ + lượt đang khám + thời lượng trung bình) | | |
-| TC-S11-10 | `quanly` → "AI dự báo vật tư" → Chạy dự báo | Bảng vật tư (Găng tay, Khẩu trang, Vật liệu trám, Thuốc tê...) với "Đã dùng 30 ngày" + "Dự báo 2 tuần tới" + ghi chú nhu cầu | | |
+| TC-S11-07 | `letan` → "Lập phiếu khám" → Xem / in phiếu PDF | Bản xem trước ở cột phải có STT, phòng khám, thông tin bệnh nhân, bác sĩ, lý do, hướng dẫn và QR chứa mã phiếu; Lưu PDF tạo tệp mở được, In phiếu mở hộp chọn máy in | | |
 
 ---
 
@@ -220,3 +233,25 @@
 - Bằng chứng kèm theo (ảnh chụp/alert, câu lệnh SQL kiểm tra DB, file CSV) lưu vào `TaiLieu/docs/evidence/<tên thành viên>/`.
 
 > **Lưu ý sau test:** khôi phục trạng thái đã sửa tạm (bật lại `bacsi2`, DV0001) hoặc chạy lại toàn bộ seed để có dữ liệu demo chuẩn.
+
+## S13 — Hồi quy sau rà soát hệ thống
+
+| Mã | Thao tác | Kết quả mong đợi |
+| --- | --- | --- |
+| TC-S13-01 | Thanh toán một phiếu rồi tải lại danh sách | Chi tiết dịch vụ, tổng tiền, tiền khách đưa và tiền thừa của phiếu cũ được xóa; không hiện dữ liệu cũ khi danh sách trống. |
+| TC-S13-02 | Vào Hàng chờ, chuyển màn hình rồi quay lại nhiều lần | Chỉ màn đang mở tự làm mới mỗi 10 giây; không có nhiều thông báo hàng chờ trống lặp lại. |
+| TC-S13-03 | Chuyển phòng trong Hàng chờ | Số vừa gọi và nút Gọi lại được đặt lại theo phòng mới. |
+| TC-S13-04 | Bác sĩ tải lại danh sách khi không còn phiếu khám | Trường nhập, bảng chỉ định/thuốc được xóa; nút Lưu và Hoàn tất bị khóa. |
+| TC-S13-05 | Đăng nhập sai vai trò và gọi BUS đọc chỉ định/thuốc/thanh toán | Bị từ chối với TB08; GUI không truy vấn DAO trực tiếp. |
+| TC-S13-06 | Hai máy đồng thời tạo mã mới đầu ngày | Bộ đếm khóa trong transaction; mã không trùng và không lỗi INSERT bộ đếm. |
+| TC-S13-07 | Tạo mã dịch vụ ở hai ngày khác nhau | Mã dịch vụ tiếp tục tăng, không reset theo ngày. |
+
+## TC-S14 — Xuất hóa đơn cuối lượt
+
+| Mã | Thao tác | Kết quả mong đợi |
+| --- | --- | --- |
+| TC-S14-01 | Lễ tân chọn lượt HOAN_TAT, nhập tiền hợp lệ và xác nhận thanh toán | Giao dịch được lưu; khu vực bên phải chuyển sang xem trước hóa đơn, không che menu hay mở đè lên form. |
+| TC-S14-02 | Đối chiếu nội dung hóa đơn | Có mã hóa đơn, lượt khám, bệnh nhân, từng dịch vụ, số lượng, đơn giá, thành tiền, tổng thanh toán, phương thức, tiền khách trả/thừa và nhân viên thu. |
+| TC-S14-03 | Chọn Lưu PDF | Tạo PDF mở được, hiển thị đầy đủ chi tiết và số tiền đã lưu trong hóa đơn. |
+| TC-S14-04 | Chọn In hóa đơn | Mở hộp thoại máy in; hủy thì không in, xác nhận thì gửi hóa đơn đến máy in. |
+| TC-S14-05 | Chọn Quay lại thanh toán sau khi phát hành | Trở về màn thanh toán; lượt vừa thu không còn trong danh sách chờ. |

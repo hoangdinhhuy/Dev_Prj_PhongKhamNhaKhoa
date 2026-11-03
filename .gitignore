@@ -11,3 +11,9 @@ out/
 .project
 .DS_Store
 **/db.properties
+.env
+.env.*
+!**/.env.example
+**/service-account*.json
+SourceCode/data/tts-cache/
+SourceCode/DATA/backup/*.bak

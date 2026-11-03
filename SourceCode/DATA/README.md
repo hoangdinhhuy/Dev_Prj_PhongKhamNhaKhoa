@@ -19,6 +19,15 @@ Chạy schema trước, seed sau, đúng số thứ tự. File đã chạy chung
 | 11 | `010_chitietcapthuoc.sql` | `010_seed_chitietcapthuoc.sql` | Thắng |
 | 12 | — | `011_seed_morong.sql` (mở rộng dữ liệu demo: 20 BN, phiếu 7 ngày, 14 dịch vụ) | cả nhóm |
 | 13 | `012_hoadon_phieukham.sql` (FK HoaDon↔PhieuKham cho thanh toán cuối lượt) | — | Thanh |
+| 14 | `013_hanghoa.sql` (danh mục hàng hóa và tồn kho) | `013_seed_hanghoa.sql` (6 mặt hàng, chạy lại an toàn) | Duy |
+
+Khi chạy seed bằng `sqlcmd` trên Windows, thêm `-f 65001` để giữ đúng tên hàng tiếng Việt UTF-8.
+
+## Làm mới dữ liệu bệnh nhân demo
+
+Để giữ nguyên tài khoản, nhân viên, dịch vụ, thuốc, phòng khám và hàng hóa nhưng thay toàn bộ dữ liệu bệnh nhân/phiếu khám/hóa đơn, dùng `maintenance/reset_patient_demo.sql`. Script chỉ chạy khi được bật xác nhận bên trong file và có full backup database trong 2 giờ gần nhất. Nó tạo 5 hồ sơ bệnh nhân giả lập mới, không phải dữ liệu người thật.
+
+Database đã được sao lưu trước lần làm mới này tại `backup/N15_PTUD_DB_before_patient_refresh_20261103_191356.bak`. File `.bak` bị Git bỏ qua để tránh đẩy dữ liệu database lên repository. Hướng dẫn khôi phục ở `backup/README.md`.
 
 > Seed phiếu khám (007) dùng ngày hiện tại của máy (`GETDATE()`) để màn hình Hàng chờ và Báo cáo có dữ liệu demo ngay.
 

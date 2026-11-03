@@ -30,7 +30,10 @@ public class BenhNhan_BUS {
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
-            String maBN = BoDem_DAO.layMaMoi(con, "BN", LocalDate.now());
+            String maBN;
+            do {
+                maBN = BoDem_DAO.layMaMoi(con, "BN", LocalDate.now());
+            } while (BenhNhan_DAO.tonTaiMa(con, maBN));
             BenhNhan bn = new BenhNhan(maBN, ten, sdt, cmnd, ngaySinh, emptyThanNull(diaChi),
                     emptyThanNull(tienSuDiUng));
             BenhNhan_DAO.themBenhNhan(con, bn);

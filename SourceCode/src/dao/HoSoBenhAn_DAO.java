@@ -36,5 +36,12 @@ public class HoSoBenhAn_DAO {
         }
     }
 
+    public static boolean tonTaiMa(Connection con, String ma) throws SQLException {
+        try (PreparedStatement p = con.prepareStatement("SELECT 1 FROM HoSoBenhAn WHERE maHoSo = ?")) {
+            p.setString(1, ma);
+            try (ResultSet rs = p.executeQuery()) { return rs.next(); }
+        }
+    }
+
     private HoSoBenhAn_DAO() { }
 }

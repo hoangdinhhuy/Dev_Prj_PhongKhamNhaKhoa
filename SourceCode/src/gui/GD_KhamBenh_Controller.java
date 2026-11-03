@@ -16,9 +16,6 @@ import main.App;
 import bus.DichVu_BUS;
 import bus.HoSoBenhAn_BUS;
 import bus.KhamBenh_BUS;
-import dao.ChiDinhDichVu_DAO;
-import dao.ChiTietCapThuoc_DAO;
-import dao.Thuoc_DAO;
 import entity.ChiDinhDichVu;
 import entity.ChiTietCapThuoc;
 import entity.DichVu;
@@ -105,7 +102,7 @@ public class GD_KhamBenh_Controller {
         cl_ghiChuThuoc.setCellValueFactory(cd -> new SimpleStringProperty(
                 cd.getValue().getGhiChuCapThuoc() == null ? "" : cd.getValue().getGhiChuCapThuoc()));
         cbb_dichVu.setItems(FXCollections.observableArrayList(DichVu_BUS.danhSachDichVuDangPhucVu(App.session)));
-        cbb_thuoc.setItems(FXCollections.observableArrayList(Thuoc_DAO.getAllThuoc()));
+        cbb_thuoc.setItems(FXCollections.observableArrayList(KhamBenh_BUS.danhSachThuoc(App.session)));
         taiLai();
     }
 
@@ -121,6 +118,14 @@ public class GD_KhamBenh_Controller {
             } else {
                 lb_bn.setText("(hôm nay chưa có phiếu khám của bạn)");
                 lb_tienSu.setText("");
+                ta_chanDoan.clear();
+                txt_ketQua.clear();
+                txt_thuocTuMua.clear();
+                chiDinhTam.clear();
+                thuocTam.clear();
+                napBangTam();
+                btn_luu.setDisable(true);
+                btn_hoanTat.setDisable(true);
             }
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
@@ -140,8 +145,8 @@ public class GD_KhamBenh_Controller {
         ta_chanDoan.setText(pk.getChanDoan() == null ? "" : pk.getChanDoan());
         txt_ketQua.setText(pk.getKetQuaDieuTri() == null ? "" : pk.getKetQuaDieuTri());
         txt_thuocTuMua.setText(pk.getGhiChuThuocTuMua() == null ? "" : pk.getGhiChuThuocTuMua());
-        chiDinhTam = new ArrayList<>(ChiDinhDichVu_DAO.layTheoPhieu(pk.getMaPhieuKham()));
-        thuocTam = new ArrayList<>(ChiTietCapThuoc_DAO.layTheoPhieu(pk.getMaPhieuKham()));
+        chiDinhTam = new ArrayList<>(KhamBenh_BUS.layChiDinhCuaToi(App.session, pk.getMaPhieuKham()));
+        thuocTam = new ArrayList<>(KhamBenh_BUS.layThuocCapCuaToi(App.session, pk.getMaPhieuKham()));
         napBangTam();
         boolean choSua = pk.getTrangThai() == entity.TrangThaiPhieuKham.DANG_KHAM;
         btn_luu.setDisable(!choSua);

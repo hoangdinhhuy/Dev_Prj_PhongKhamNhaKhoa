@@ -34,6 +34,17 @@ public class BenhNhan_DAO {
         }
     }
 
+    /** Kiểm tra mã trong cùng transaction cấp mã để bỏ qua các mã đã có từ dữ liệu seed/cũ. */
+    public static boolean tonTaiMa(Connection con, String maBenhNhan) throws SQLException {
+        String sql = "SELECT 1 FROM BenhNhan WHERE maBenhNhan = ?";
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, maBenhNhan);
+            try (ResultSet rs = pstm.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     public static void suaBenhNhan(Connection con, BenhNhan bn) throws SQLException {
         String sql = "UPDATE BenhNhan SET hoTen = ?, soDienThoai = ?, cccd = ?, ngaySinh = ?, diaChi = ?,"
                 + " tienSuDiUng = ? WHERE maBenhNhan = ?";

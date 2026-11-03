@@ -19,6 +19,7 @@ import util.ValidateUtil;
 public class DichVu_BUS {
 
     public static ArrayList<DichVu> danhSachDichVuDangPhucVu(SessionContext session) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI);
         ArrayList<DichVu> ds = new ArrayList<>();
         for (DichVu dv : DichVu_DAO.getAllDichVu()) {
             if (dv.getTrangThai() == TrangThaiDichVu.DANG_PHUC_VU) {
@@ -33,7 +34,8 @@ public class DichVu_BUS {
         return DichVu_DAO.getAllDichVu();
     }
 
-    public static DichVu layDichVuTheoMa(String maDichVu) {
+    public static DichVu layDichVuTheoMa(SessionContext session, String maDichVu) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         return DichVu_DAO.layDichVuTheoMa(maDichVu);
     }
 
@@ -47,7 +49,9 @@ public class DichVu_BUS {
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
-            String maDV = BoDem_DAO.layMaMoi(con, "DV", LocalDate.now());
+            String maDV;
+            do { maDV = BoDem_DAO.layMaMoi(con, "DV", LocalDate.now()); }
+            while (DichVu_DAO.tonTaiMa(con, maDV));
             DichVu dv = new DichVu(maDV, ten, gia, TrangThaiDichVu.DANG_PHUC_VU);
             DichVu_DAO.themDichVu(con, dv);
             con.commit();

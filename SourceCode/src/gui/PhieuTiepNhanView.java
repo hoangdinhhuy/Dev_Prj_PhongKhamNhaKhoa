@@ -96,7 +96,7 @@ public final class PhieuTiepNhanView {
         VBox tiepNhan = new VBox(8, nhan("Nhân viên tiếp nhận", 17, "#424C5B", false),
                 nhan(nhanVien == null ? "—" : nhanVien.getHoTen(), 21, DEN, true));
         VBox maTraCuu = new VBox(5, maQr(phieu.getMaPhieuKham()),
-                nhan("Mã tra cứu", 13, "#424C5B", false));
+                nhan("Mã phiếu (QR)", 13, "#424C5B", false));
         maTraCuu.setAlignment(Pos.CENTER);
         HBox cuoiPhieu = new HBox(tiepNhan, new Region(), maTraCuu);
         HBox.setHgrow(cuoiPhieu.getChildren().get(1), Priority.ALWAYS);

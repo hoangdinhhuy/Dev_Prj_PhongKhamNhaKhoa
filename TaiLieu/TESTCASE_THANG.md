@@ -1,7 +1,7 @@
 # BỘ TEST CASE — HUỲNH QUỐC THẮNG (22693891) — LUỒNG BÁC SĨ
 
 > Phạm vi: UC004 Khám & chẩn đoán + chỉ định + cấp thuốc + hoàn tất · Lịch sử khám.
-> Backend liên quan: TestRunner T17–T23 (34/34 PASS).
+> Backend liên quan: TestRunner T17–T23; trạng thái lần chạy gần nhất xem `TaiLieu/docs/ai/TEST_CASES.md`.
 
 ## TC-BS01 — Ghi nhận khám và chẩn đoán (UC004)
 

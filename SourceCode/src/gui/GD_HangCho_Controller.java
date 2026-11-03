@@ -39,27 +39,34 @@ public class GD_HangCho_Controller {
     @FXML private TableColumn<PhieuKham, String> cl_lyDo2;
     @FXML private Label lb_soDangGoi;
     @FXML private Label lb_phongDangGoi;
-    @FXML private Label lb_aiDuDoan;
     @FXML private Button btn_goSo;
     @FXML private Button btn_xacNhanVaoKham;
     @FXML private Button btn_taiLai;
+    @FXML private Button btn_goiLai;
 
     private Timeline timeline;
+    private PhieuKham phieuVuaGoi;
 
     @FXML
     private void initialize() {
         setupTable(cl_stt, cl_ma, cl_bn, cl_lyDo, cl_tt);
         setupTable(cl_stt2, cl_ma2, cl_bn2, cl_lyDo2, null);
         napPhong();
+        cbb_phong.valueProperty().addListener((o, cu, moi) -> {
+            phieuVuaGoi = null;
+            btn_goiLai.setDisable(true);
+            lb_soDangGoi.setText("—");
+            lb_phongDangGoi.setText("");
+            table_hangCho.setUserData(Boolean.FALSE);
+            taiLai();
+        });
         // Refresh tu dong moi 10 giay (le tan lap phieu -> hang cho tu thay)
         timeline = new Timeline(new KeyFrame(Duration.seconds(10), e -> taiLai()));
         timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
-        // Dung timeline khi cua so dong
+        // Chỉ làm mới khi trang đang hiển thị; rời menu thì dừng timer cũ.
         cbb_phong.sceneProperty().addListener((o, cu, sc) -> {
-            if (sc != null && sc.getWindow() != null) {
-                sc.getWindow().setOnHiding(e -> timeline.stop());
-            }
+            if (sc == null) timeline.stop();
+            else timeline.play();
         });
         taiLai();
     }
@@ -95,11 +102,11 @@ public class GD_HangCho_Controller {
     }
 
     private void napPhong() {
+        String maDangChon = cbb_phong.getValue() == null ? null : cbb_phong.getValue().getMaPhong();
         var ds = PhongKham_BUS.danhSachPhongDangNhanBenh(App.session);
         cbb_phong.setItems(FXCollections.observableArrayList(ds));
-        if (!ds.isEmpty() && cbb_phong.getValue() == null) {
-            cbb_phong.setValue(ds.get(0));
-        }
+        cbb_phong.setValue(ds.stream().filter(p -> p.getMaPhong().equals(maDangChon))
+                .findFirst().orElse(ds.isEmpty() ? null : ds.get(0)));
         cbb_phong.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
             @Override protected void updateItem(PhongKham p, boolean empty) {
                 super.updateItem(p, empty);
@@ -126,6 +133,9 @@ public class GD_HangCho_Controller {
     private void taiLai() {
         PhongKham phong = cbb_phong.getValue();
         if (phong == null) {
+            table_hangCho.getItems().clear();
+            table_dangKham.getItems().clear();
+            table_hangCho.setUserData(Boolean.FALSE);
             return;
         }
         try {
@@ -135,33 +145,15 @@ public class GD_HangCho_Controller {
             if (!cho.isEmpty()) {
                 table_hangCho.getSelectionModel().selectFirst();
             }
-            capNhatDuDoan();
             var dang = HangCho_BUS.danhSachDangKham(App.session, java.time.LocalDate.now(), phong.getMaPhong());
             table_dangKham.getItems().clear();
             table_dangKham.setItems(FXCollections.observableArrayList(dang));
-            if (cho.isEmpty() && table_hangCho.getUserData() != null) {
+            if (cho.isEmpty() && Boolean.TRUE.equals(table_hangCho.getUserData())) {
                 AlertUtil.baoThongTin(MaThongBao.TB07);
-                table_hangCho.setUserData(null);
             }
-            table_hangCho.setUserData(Boolean.TRUE);
+            table_hangCho.setUserData(!cho.isEmpty());
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
-        }
-    }
-
-    /** (4) AI du doan thoi gian cho cua phieu dang chon (util/AIHoTro). */
-    private void capNhatDuDoan() {
-        PhieuKham chon = table_hangCho.getSelectionModel().getSelectedItem();
-        if (chon == null) {
-            lb_aiDuDoan.setText("AI dự đoán thời gian chờ: chọn một bệnh nhân trong hàng chờ để xem ước tính.");
-            return;
-        }
-        try {
-            int phut = bus.AIHoTro_BUS.duDoanThoiGianCho(App.session, chon.getMaPhieuKham());
-            lb_aiDuDoan.setText("AI dự đoán thời gian chờ của " + chon.getTenBenhNhan()
-                    + " (STT " + chon.getSoThuTu() + "): ~" + phut + " phút nữa vào khám.");
-        } catch (RuntimeException ex) {
-            lb_aiDuDoan.setText("AI dự đoán: không thể ước tính lúc này.");
         }
     }
 
@@ -174,12 +166,29 @@ public class GD_HangCho_Controller {
         }
         try {
             PhieuKham pk = HangCho_BUS.goiSo(App.session, chon.getMaPhieuKham());
+            phieuVuaGoi = pk;
+            btn_goiLai.setDisable(false);
             lb_soDangGoi.setText(String.valueOf(pk.getSoThuTu()));
             lb_phongDangGoi.setText("Phòng " + pk.getMaPhong() + " - " + pk.getTenBenhNhan());
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
         }
     }
+
+    @FXML
+    private void goiLai() {
+        if (phieuVuaGoi == null) return;
+        try {
+            PhieuKham pk = HangCho_BUS.goiSo(App.session, phieuVuaGoi.getMaPhieuKham());
+            lb_soDangGoi.setText(String.valueOf(pk.getSoThuTu()));
+            lb_phongDangGoi.setText("Phòng " + pk.getMaPhong());
+        } catch (RuntimeException ex) {
+            AlertUtil.baoLoi(ex.getMessage());
+            phieuVuaGoi = null;
+            btn_goiLai.setDisable(true);
+        }
+    }
+
 
     @FXML
     private void xacNhanVaoKham() {

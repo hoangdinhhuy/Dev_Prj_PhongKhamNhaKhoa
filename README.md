@@ -28,17 +28,6 @@ Phòng khám Nha khoa Sài Gòn hiện quản lý bệnh nhân, phiếu khám v�
 
 Việc đặt lịch hẹn qua điện thoại/quét QR **không thuộc phạm vi đồ án**, được phát triển riêng trong phần khởi nghiệp: [TaiLieu/README_KHOI_NGHIEP.md](TaiLieu/README_KHOI_NGHIEP.md).
 
-### 2.3. Tính năng hỗ trợ vận hành (AI + giao diện)
-
-| Tính năng | Vai trò dùng | Mô tả |
-| --- | --- | --- |
-| AI dự đoán thời gian chờ | Phụ tá | Ở màn Hàng chờ: chọn bệnh nhân → ước tính phút vào khám theo vị trí hàng chờ + lượt đang khám + thời lượng trung bình lịch sử |
-| AI dự báo vật tư | Quản lý | Màn "AI dự báo vật tư": dự báo găng tay/khẩu trang/vật liệu trám/thuốc tê 2 tuần tới theo dịch vụ đã chỉ định 30 ngày, kèm ghi chú nhu cầu |
-| Chế độ sáng / tối | Mọi vai trò | Nút chuyển ở sidebar; lưu theo phiên đăng nhập |
-| In phiếu khám | Lễ tân | Sau khi lập phiếu → "Xem phiếu" → In phiếu (máy in Windows) |
-
-> Cả 2 AI đều **chỉ hỗ trợ vận hành**, tính trực tiếp từ dữ liệu DB (offline, không can thiệp chẩn đoán/điều trị của bác sĩ).
-
 ### 2.1. Tác nhân và danh sách use case (theo báo cáo Chương 3)
 
 | Mã | Tên use case | Tác nhân | Người hiện thực |
@@ -53,6 +42,8 @@ Việc đặt lịch hẹn qua điện thoại/quét QR **không thuộc phạm 
 | UC008 | Xem báo cáo lượt khám (kèm xuất CSV, không có doanh thu) | Quản lý | Duy |
 | UC009 | Theo dõi hàng chờ (gọi số, xác nhận vào khám) | Phụ tá | Thanh |
 | UC010 | Quản lý nhân viên & tài khoản (nêu trong bảng tác nhân, đặc tả do nhóm chốt tối thiểu) | Quản lý | Duy |
+
+QT-07 (ngoài UC): Quản lý hàng hóa/tồn kho — quản lý thêm và cập nhật tên, đơn vị tính, số lượng tồn, mức tồn tối thiểu; bảng đánh dấu hàng cần bổ sung.
 
 Bổ sung ngoài đặc tả UC nhưng có trong sơ đồ luồng Word: **Thanh toán dịch vụ cuối lượt** (Lễ tân) và **Lịch sử khám** (Bác sĩ/Quản lý).
 
@@ -105,7 +96,7 @@ Kiến trúc 3 lớp theo sơ đồ nhóm, hiện thực theo chuẩn mẫu củ
         └────────────────┘
   🔷 Model (model): POJO + enum dùng chung mọi lớp.
   🔷 connect (connect): ConnectDB singleton — nơi DUY NHẤT cấp Connection.
-  🔷 util (util): FormatUtil, ValidateUtil, QuyenUtil, AlertUtil, MaThongBao, AIHoTro (AI dự đoán chờ + dự báo vật tư).
+  🔷 util (util): FormatUtil, ValidateUtil, QuyenUtil, AlertUtil, MaThongBao.
 ```
 
 **Quy tắc vàng:** GUI chỉ gọi BUS; BUS chỉ gọi DAO; DAO chỉ nói chuyện với SQL Server. Chi tiết từng tầng tại [TaiLieu/README_RULES.md](TaiLieu/README_RULES.md).
@@ -117,7 +108,7 @@ PTUD_N15_/
 ├── SourceCode/                     ← toàn bộ mã nguồn (Maven)
 │   ├── pom.xml                     ← JDK 21, JavaFX 21, mssql-jdbc; Duy giữ quyền sửa
 │   ├── DATA/
-│   │   ├── schema/                 ← 000_hatang.sql … 012_*.sql (mỗi file một chủ)
+│   │   ├── schema/                 ← 000_hatang.sql … 013_*.sql (mỗi file một chủ)
 │   │   ├── seed/                   ← dữ liệu mẫu đi kèm từng schema
 │   │   └── README.md               ← hướng dẫn chạy SQL + cấu hình máy
 │   └── src/                        ← package phẳng Y CHANG Nhóm 11 (connectDB/dao/entity/gui/main/pic)
@@ -126,8 +117,8 @@ PTUD_N15_/
 │       ├── dao/                   ← Xxx_DAO + BoDem_DAO (cấp mã tự động)
 │       ├── bus/                   ← Xxx_BUS (lớp nghiệp vụ riêng của nhóm)
 │       ├── gui/                   ← GD_*_Controller + toàn bộ FXML + ungdung.css (N11 để chung package)
-│       ├── main/                  ← App.java (entry) + TestRunner.java (34 test backend)
-│       ├── util/                  ← FormatUtil, ValidateUtil, QuyenUtil, AlertUtil, MaThongBao, AIHoTro
+│       ├── main/                  ← App.java (entry) + TestRunner.java (backend checks)
+│       ├── util/                  ← FormatUtil, ValidateUtil, QuyenUtil, AlertUtil, MaThongBao
 │       ├── pic/                   ← logo + bộ icon FontAwesome
 │       └── db.properties(.example) ← CẤU HÌNH THẬT — KHÔNG commit
 ├── TaiLieu/                        ← README_RULES, README_KHOI_NGHIEP, KICHBAN (md+docx),
@@ -140,7 +131,7 @@ PTUD_N15_/
 
 ### 4.2. Màn hình ứng dụng (đặt tên chuẩn — cấm đặt lại)
 
-| FXML (`SourceCode/src/main/resources/fxml/`) | Use case | Người |
+| FXML (`SourceCode/src/gui/`) | Use case | Người |
 | --- | --- | --- |
 | `GD_DangNhap.fxml` | UC001 | Duy |
 | `GD_Chinh.fxml` | khung điều hướng 1 cửa sổ | Duy |
@@ -153,14 +144,14 @@ PTUD_N15_/
 | `GD_KhamBenh.fxml` | UC004 | Thắng |
 | `GD_LichSuKham.fxml` | lịch sử khám (sơ đồ luồng Word) | Thắng |
 | `GD_QLNhanVien.fxml` | UC010 | Duy |
+| `GD_QLHangHoa.fxml` | QT-07 — danh mục hàng hóa/tồn kho | Duy |
 | `GD_QLDichVu.fxml` | UC007 | Duy |
 | `GD_ThanhToan.fxml` | thanh toán cuối lượt (sơ đồ luồng Word) | Huy |
 | `GD_BaoCao.fxml` | UC008 | Duy |
-| `GD_DuBaoVatTu.fxml` | AI dự báo vật tư (ngoài UC — theo khởi nghiệp) | Duy |
 
-## 5. Cơ sở dữ liệu (theo báo cáo Chương 4 — 12 bảng)
+## 5. Cơ sở dữ liệu (12 bảng nghiệp vụ ban đầu + hàng hóa)
 
-`NhanVien`, `TaiKhoan`, `PhongKham`, `BenhNhan`, `HoSoBenhAn`, `DichVu`, `Thuoc`, `PhieuKham`, `HoaDon`, `ChiTietHoaDon`, `ChiDinhDichVu`, `ChiTietCapThuoc` — cộng bảng hạ tầng `BoDem` (bộ đếm mã) do Thanh chủ trì.
+`NhanVien`, `TaiKhoan`, `PhongKham`, `BenhNhan`, `HoSoBenhAn`, `DichVu`, `Thuoc`, `PhieuKham`, `HoaDon`, `ChiTietHoaDon`, `ChiDinhDichVu`, `ChiTietCapThuoc`, `HangHoa` — cộng bảng hạ tầng `BoDem` (bộ đếm mã) do Thanh chủ trì.
 
 Quy ước chính (chi tiết đầy đủ trong [TaiLieu/README_RULES.md](TaiLieu/README_RULES.md)):
 
@@ -173,7 +164,7 @@ Quy ước chính (chi tiết đầy đủ trong [TaiLieu/README_RULES.md](TaiLi
 1. **JDK 21** — cài Temurin JDK 21 (tick *Set JAVA_HOME*), `java -version` phải báo 21.
 2. **SQL Server + SSMS** — bật **TCP/IP 1433** trong SQL Server Configuration Manager và restart dịch vụ; bật **SQL Server + Windows Authentication mode**; enable user `sa`.
 3. **VS Code** — cài Extension Pack for Java + Maven for Java; **Scene Builder** (Gluon) để mở FXML.
-4. **Tạo DB** — trong SSMS (hoặc Git Bash `cd SourceCode/DATA` rồi vòng lặp sqlcmd theo `DATA/README.md`): chạy `schema/000_hatang.sql` → `012_*.sql` rồi `seed/*.sql`.
+4. **Tạo DB** — trong SSMS (hoặc Git Bash `cd SourceCode/DATA` rồi vòng lặp sqlcmd theo `DATA/README.md`): chạy `schema/000_hatang.sql` → `013_*.sql` rồi `seed/*.sql`.
 5. **Cấu hình kết nối** — copy `SourceCode/src/db.properties.example` thành `db.properties`, sửa mật khẩu `sa` (file thật không commit).
 6. **Chạy app** — mở thư mục `SourceCode` trong VS Code (hoặc terminal `cd SourceCode`): `mvn clean compile` rồi `mvn javafx:run`.
 7. **Đăng nhập thử** — `letan / 123456` (các tài khoản seed xem `TaiLieu/../SourceCode/DATA/seed/002_seed_nhanvien_taikhoan.sql`).
@@ -197,18 +188,26 @@ Quy ước chính (chi tiết đầy đủ trong [TaiLieu/README_RULES.md](TaiLi
 | **M3 — Ghép luồng** | Lễ tân → Phụ tá → Bác sĩ → Quản lý chạy trơn |
 | **M4 — Nghiệm thu** | kiểm tra chéo, cập nhật Word/PPT, tập demo |
 
-## 8. Trình bày & bảo vệ
+## 8. Kịch bản quay video giới thiệu project
 
-Luồng demo chuẩn sau đăng nhập (mỗi người trình bày chặng của mình):
+**Thời lượng gợi ý:** 7–9 phút. Dùng dữ liệu demo, không dùng thông tin bệnh nhân thật. Quay màn hình app toàn màn hình; khi đổi vai trò thì đăng xuất rồi đăng nhập lại bằng tài khoản seed. Nếu không có máy in, chỉ trình bày bản xem trước/PDF.
 
-1. **Duy** — giới thiệu, đăng nhập phân quyền, khung ứng dụng.
-2. **Huy** — tìm/tạo hồ sơ bệnh nhân → thu phí khám → lập phiếu, cấp STT.
-3. **Thanh** — theo dõi hàng chờ theo phòng → gọi số → xác nhận vào khám.
-4. **Thắng** — nhận danh sách khám → xem tiền sử → chẩn đoán, chỉ định, cấp thuốc → hoàn tất (+ lịch sử khám).
-5. **Huy** — thanh toán dịch vụ cuối lượt.
-6. **Duy** — quản lý nhân viên/dịch vụ → báo cáo lượt khám → xuất CSV.
+| Thời gian | Màn hình và thao tác | Lời thuyết minh gợi ý |
+| --- | --- | --- |
+| 0:00–0:35 | Hiện trang tiêu đề hoặc màn hình đăng nhập | “Xin chào, nhóm 15 xin giới thiệu hệ thống quản lý Phòng khám Nha khoa Sài Gòn. Ứng dụng hỗ trợ quy trình tiếp nhận, khám chữa bệnh, thanh toán và quản lý nội bộ.” |
+| 0:35–1:10 | Đăng nhập `letan / 123456`; lướt qua menu | “Hệ thống phân quyền theo vai trò. Đây là giao diện lễ tân; các chức năng được gom theo công việc tiếp nhận và thu ngân.” |
+| 1:10–2:00 | Mở Hồ sơ bệnh nhân; tìm nhanh bằng SĐT; chọn hồ sơ hoặc tạo hồ sơ demo nếu cần | “Lễ tân có thể tìm nhanh hồ sơ theo số điện thoại, cập nhật thông tin hành chính và tiền sử dị ứng. Tra cứu chi tiết cùng lịch sử phiếu khám nằm ở UC006.” |
+| 2:00–2:50 | Thu phí khám ban đầu; xem hóa đơn/PDF | “Phí khám ban đầu được ghi thành hóa đơn riêng. Hóa đơn được lưu để đối chiếu và gắn vào phiếu khám, không thu lần hai.” |
+| 2:50–3:40 | Lập phiếu khám; chọn bệnh nhân, bác sĩ, phòng, nhập nhu cầu khám do bệnh nhân cung cấp; lập phiếu và mở bản xem/in | “Lễ tân tiếp nhận nhu cầu do bệnh nhân trình bày, chọn bác sĩ và phòng đang nhận bệnh. Hệ thống cấp mã phiếu và số thứ tự theo phòng.” |
+| 3:40–4:25 | Đăng xuất, đăng nhập `phuta / 123456`; mở Hàng chờ; gọi số và xác nhận vào khám | “Phụ tá theo dõi hàng chờ của phòng, gọi bệnh nhân và xác nhận đã vào khám. Trạng thái được cập nhật để bác sĩ nhận đúng lượt.” |
+| 4:25–5:35 | Đăng xuất, đăng nhập `bacsi1 / 123456`; mở Khám và chẩn đoán; chọn lượt, ghi chẩn đoán/kết quả, chỉ định dịch vụ hoặc thuốc, lưu và hoàn tất | “Bác sĩ xem thông tin cần thiết, ghi nhận chẩn đoán và kết quả, sau đó chỉ định dịch vụ hoặc thuốc nếu cần. Chỉ bác sĩ mới hoàn tất lượt khám.” |
+| 5:35–6:25 | Đăng nhập lại lễ tân; mở Thanh toán dịch vụ; chọn lượt có dịch vụ, xem tổng tiền, xác nhận và mở hóa đơn | “Lượt không phát sinh dịch vụ không nằm trong danh sách thanh toán cuối lượt. Với lượt có chỉ định, lễ tân thu tiền và xuất hóa đơn chi tiết.” |
+| 6:25–7:20 | Đăng xuất, đăng nhập `quanly / 123456`; lướt quản lý dịch vụ, hàng hóa, nhân viên và báo cáo | “Quản lý cập nhật danh mục, theo dõi tồn kho và xem báo cáo. Mỗi vai trò chỉ thấy chức năng phù hợp.” |
+| 7:20–7:45 | Kết thúc ở dashboard hoặc trang báo cáo | “Ứng dụng được xây dựng bằng JavaFX, theo kiến trúc GUI–BUS–DAO và lưu dữ liệu trên SQL Server. Cảm ơn thầy cô và các bạn đã theo dõi.” |
 
-Mỗi thành viên phải lần theo được một thao tác từ GUI xuống DB (GUI → BUS → DAO → SQL). Minh chứng lưu `TaiLieu/docs/evidence/<tên>/`.
+**Mẹo quay:** bộ demo mới có 5 hồ sơ giả lập; dùng SĐT `0909000101` để tìm nhanh bệnh nhân đầu tiên. Kiểm tra SQL Server và đăng nhập trước khi quay; đóng hộp thoại thừa; thao tác chậm, chờ bảng tải xong; không quay màn hình cấu hình chứa mật khẩu/API key. Nếu không kịp thời lượng, bỏ đoạn quản lý hàng hóa hoặc chỉ lướt nhanh danh mục.
+
+Mỗi thành viên vẫn cần giải thích được một thao tác từ GUI xuống DB (GUI → BUS → DAO → SQL). Minh chứng lưu `TaiLieu/docs/evidence/<tên>/`.
 
 ---
 

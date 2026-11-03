@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
 import main.App;
 import bus.BenhNhan_BUS;
 import bus.NhanVien_BUS;
@@ -21,6 +22,7 @@ import util.MaThongBao;
 /** UC003 - Lap phieu kham + cap STT (chu file: Huy). */
 public class GD_LapPhieuKham_Controller {
 
+    @FXML private BorderPane khungLapPhieu;
     @FXML private TextField txt_timBN;
     @FXML private Label lb_bn;
     @FXML private Label lb_hoaDon;
@@ -68,6 +70,10 @@ public class GD_LapPhieuKham_Controller {
             String tu = txt_timBN.getText().trim();
             benhNhan = null;
             hoaDonPhi = null;
+            phieuVuaLap = null;
+            khungLapPhieu.setRight(null);
+            lb_sttDuKien.setText("");
+            lb_hoaDon.setText("(chưa có - hãy dùng màn hình Thu phí)");
             if (tu.matches("BN\\d+")) {
                 benhNhan = BenhNhan_BUS.layBenhNhanTheoMa(tu);
             } else {
@@ -101,6 +107,7 @@ public class GD_LapPhieuKham_Controller {
                     pk == null ? null : pk.getMaPhong(),
                     txt_lyDoKham.getText(), hoaDonPhi);
             phieuVuaLap = phieu;
+            khungLapPhieu.setRight(null);
             lb_sttDuKien.setText(String.valueOf(phieu.getSoThuTu()));
             AlertUtil.baoThongTin("Đã lập phiếu " + phieu.getMaPhieuKham() + " - STT " + phieu.getSoThuTu()
                     + " - phòng " + phieu.getMaPhong() + " (chờ khám)");
@@ -130,19 +137,17 @@ public class GD_LapPhieuKham_Controller {
         javafx.scene.layout.BorderPane khung = new javafx.scene.layout.BorderPane();
         khung.setCenter(xemTruoc);
         khung.setBottom(thanhNut);
-        javafx.stage.Stage stage = new javafx.stage.Stage();
-        stage.initOwner(txt_timBN.getScene().getWindow());
-        stage.initModality(javafx.stage.Modality.WINDOW_MODAL);
-        stage.initStyle(javafx.stage.StageStyle.UNDECORATED);
-        javafx.scene.Scene sc = new javafx.scene.Scene(khung, 840, 820);
-        main.App.ganTheme(sc);
-        stage.setScene(sc);
+        khung.setStyle("-fx-background-color: white; -fx-border-color: #CFD9E5; -fx-border-width: 1;");
+        khung.prefWidthProperty().bind(khungLapPhieu.widthProperty().multiply(0.52));
+        khung.setMaxWidth(840);
+        khungLapPhieu.setRight(khung);
+        javafx.stage.Window owner = txt_timBN.getScene().getWindow();
         btnPdf.setOnAction(e -> {
             javafx.stage.FileChooser fc = new javafx.stage.FileChooser();
             fc.setTitle("Lưu phiếu tiếp nhận khám");
             fc.setInitialFileName("phieu_tiep_nhan_" + phieuVuaLap.getMaPhieuKham() + ".pdf");
             fc.getExtensionFilters().add(new javafx.stage.FileChooser.ExtensionFilter("PDF", "*.pdf"));
-            java.io.File tep = fc.showSaveDialog(stage);
+            java.io.File tep = fc.showSaveDialog(owner);
             if (tep != null) {
                 try {
                     util.PdfImageUtil.luuTrangA4(trang, tep.toPath());
@@ -158,7 +163,7 @@ public class GD_LapPhieuKham_Controller {
                 AlertUtil.baoLoi("Không tìm thấy máy in trên máy này.");
                 return;
             }
-            if (!job.showPrintDialog(stage)) return;
+            if (!job.showPrintDialog(owner)) return;
             var layout = job.getPrinter().createPageLayout(javafx.print.Paper.A4,
                     javafx.print.PageOrientation.PORTRAIT, javafx.print.Printer.MarginType.DEFAULT);
             double tyLe = Math.min(layout.getPrintableWidth() / trang.getWidth(),
@@ -177,7 +182,6 @@ public class GD_LapPhieuKham_Controller {
                 trang.getTransforms().remove(thuNho);
             }
         });
-        btnDong.setOnAction(e -> stage.close());
-        stage.showAndWait();
+        btnDong.setOnAction(e -> khungLapPhieu.setRight(null));
     }
 }

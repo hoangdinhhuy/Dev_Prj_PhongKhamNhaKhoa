@@ -21,7 +21,9 @@ public class HoSoBenhAn_BUS {
         if (hs != null) {
             return hs.getMaHoSo();
         }
-        String maHS = BoDem_DAO.layMaMoi(con, "HS", LocalDate.now());
+        String maHS;
+        do { maHS = BoDem_DAO.layMaMoi(con, "HS", LocalDate.now()); }
+        while (HoSoBenhAn_DAO.tonTaiMa(con, maHS));
         HoSoBenhAn moi = new HoSoBenhAn(maHS, tienSuBenhLy == null || tienSuBenhLy.isBlank()
                 ? "Tạo tự động khi khám lần đầu" : tienSuBenhLy, null, maBenhNhan);
         HoSoBenhAn_DAO.themHoSo(con, moi);

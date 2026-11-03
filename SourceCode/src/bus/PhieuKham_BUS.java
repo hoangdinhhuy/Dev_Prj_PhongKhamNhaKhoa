@@ -57,8 +57,12 @@ public class PhieuKham_BUS {
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
-            String maPK = BoDem_DAO.layMaMoi(con, "PK", ngayKham);
-            int stt = BoDem_DAO.laySoThuTuTiepTheo(con, ngayKham, maPhong);
+            String maPK;
+            do { maPK = BoDem_DAO.layMaMoi(con, "PK", ngayKham); }
+            while (PhieuKham_DAO.tonTaiMa(con, maPK));
+            int stt;
+            do { stt = BoDem_DAO.laySoThuTuTiepTheo(con, ngayKham, maPhong); }
+            while (PhieuKham_DAO.tonTaiSoThuTu(con, ngayKham, maPhong, stt));
             PhieuKham pk = new PhieuKham();
             pk.setMaPhieuKham(maPK);
             pk.setNgayKham(ngayKham);
@@ -85,7 +89,7 @@ public class PhieuKham_BUS {
         return PhieuKham_DAO.layToanBoLichSu();
     }
 
-    /** Phieu hoan tat chua thanh toan dich vu (man hinh Thanh toan — LE_TAN). */
+    /** Phieu hoan tat co dich vu phat sinh, chua thanh toan (LE_TAN). */
     public static java.util.List<PhieuKham> layPhieuHoanTatChuaThanhToan(SessionContext session) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         return PhieuKham_DAO.layPhieuHoanTatChuaThanhToan();

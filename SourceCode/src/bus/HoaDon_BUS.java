@@ -14,6 +14,7 @@ import dao.HoaDon_DAO;
 import dao.PhieuKham_DAO;
 import entity.ChiDinhDichVu;
 import entity.ChiTietHoaDon;
+import entity.ChiTietHoaDon;
 import entity.ChucVu;
 import entity.DichVu;
 import entity.HoaDon;
@@ -49,7 +50,7 @@ public class HoaDon_BUS {
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
-            String maHD = BoDem_DAO.layMaMoi(con, "HD", LocalDateTime.now().toLocalDate());
+            String maHD = maHoaDonMoi(con);
             HoaDon hd = new HoaDon(maHD);
             hd.setNgayThu(LocalDateTime.now());
             hd.setHinhThucThanhToan(hinhThucThanhToan);
@@ -74,6 +75,20 @@ public class HoaDon_BUS {
     public static HoaDon layHoaDonPhiChuaDung(SessionContext session, String maBenhNhan) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         return HoaDon_DAO.layHoaDonPhiChuaDungTheoBN(maBenhNhan);
+    }
+
+    public static List<ChiDinhDichVu> layChiDinhChoThanhToan(SessionContext session, String maPhieuKham) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
+        return ChiDinhDichVu_DAO.layTheoPhieu(maPhieuKham);
+    }
+
+    public static List<ChiTietHoaDon> layChiTietHoaDon(SessionContext session, String maHoaDon) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
+        HoaDon hd = HoaDon_DAO.layHoaDonTheoMa(maHoaDon);
+        if (hd == null || !hd.isDaThanhToan()) {
+            throw new IllegalArgumentException(MaThongBao.TB17);
+        }
+        return ChiTietHoaDon_DAO.layChiTietTheoHoaDon(maHoaDon);
     }
 
     /** LT-06 — Thanh toan dich vu cuoi luot: hoa don gom tat ca dich vu da chi dinh cua phieu HOAN_TAT. */
@@ -102,7 +117,7 @@ public class HoaDon_BUS {
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
-            String maHD = BoDem_DAO.layMaMoi(con, "HD", LocalDateTime.now().toLocalDate());
+            String maHD = maHoaDonMoi(con);
             HoaDon hd = new HoaDon(maHD);
             hd.setNgayThu(LocalDateTime.now());
             hd.setHinhThucThanhToan(hinhThucThanhToan);
@@ -131,6 +146,14 @@ public class HoaDon_BUS {
             con.rollback();
             con.setAutoCommit(true);
         } catch (SQLException ignored) { }
+    }
+
+    private static String maHoaDonMoi(Connection con) throws SQLException {
+        String maHD;
+        do {
+            maHD = BoDem_DAO.layMaMoi(con, "HD", LocalDateTime.now().toLocalDate());
+        } while (HoaDon_DAO.tonTaiMa(con, maHD));
+        return maHD;
     }
 
     private HoaDon_BUS() { }

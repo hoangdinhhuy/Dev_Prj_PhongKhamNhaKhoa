@@ -57,15 +57,15 @@ public class GD_Chinh_Controller {
         them("Hồ sơ bệnh nhân", "icon_folder.png", "GD_QLBenhNhan", ChucVu.LE_TAN);
         them("Tra cứu hồ sơ bệnh nhân", "icon_search.png", "GD_TraCuuBenhNhan", ChucVu.LE_TAN);
         them("Thu lệ phí khám", "icon_dollar.png", "GD_ThuPhi", ChucVu.LE_TAN);
-        them("Thanh toán dịch vụ", "icon_receipt.png", "GD_ThanhToan", ChucVu.LE_TAN);
         them("Lập phiếu khám", "icon_clipboard.png", "GD_LapPhieuKham", ChucVu.LE_TAN);
+        them("Thanh toán dịch vụ", "icon_receipt.png", "GD_ThanhToan", ChucVu.LE_TAN);
         them("Hàng chờ theo phòng", "icon_clock.png", "GD_HangCho", ChucVu.PHU_TA);
         them("Khám và chẩn đoán", "icon_stethoscope.png", "GD_KhamBenh", ChucVu.BAC_SI);
         them("Lịch sử khám", "icon_history.png", "GD_LichSuKham", ChucVu.BAC_SI);
+        them("Quản lý hàng hóa", "icon_folder.png", "GD_QLHangHoa", ChucVu.QUAN_LY);
         them("Quản lý nhân viên", "icon_users.png", "GD_QLNhanVien", ChucVu.QUAN_LY);
         them("Quản lý dịch vụ", "icon_tooth.png", "GD_QLDichVu", ChucVu.QUAN_LY);
         them("Báo cáo lượt khám", "icon_chart.png", "GD_BaoCao", ChucVu.QUAN_LY);
-        them("AI dự báo vật tư", "icon_ai.png", "GD_DuBaoVatTu", ChucVu.QUAN_LY);
         moFxml("GD_TongQuan");
     }
 

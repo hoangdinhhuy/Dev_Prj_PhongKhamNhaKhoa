@@ -87,6 +87,13 @@ public class NhanVien_DAO {
         }
     }
 
+    public static boolean tonTaiMa(Connection con, String ma) throws SQLException {
+        try (PreparedStatement p = con.prepareStatement("SELECT 1 FROM NhanVien WHERE maNhanVien = ?")) {
+            p.setString(1, ma);
+            try (ResultSet rs = p.executeQuery()) { return rs.next(); }
+        }
+    }
+
     public static void suaNhanVien(Connection con, NhanVien nv) throws SQLException {
         String sql = "UPDATE NhanVien SET hoTen = ?, soDienThoai = ?, ngaySinh = ?, gioiTinh = ?, cccd = ?,"
                 + " chucVu = ?, conLamViec = ? WHERE maNhanVien = ?";

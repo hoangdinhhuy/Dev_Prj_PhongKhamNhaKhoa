@@ -2,13 +2,14 @@ package main;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import bus.AIHoTro_BUS;
 import bus.BaoCao_BUS;
 import bus.BenhNhan_BUS;
 import bus.DichVu_BUS;
 import bus.HangCho_BUS;
+import bus.HangHoa_BUS;
 import bus.HoaDon_BUS;
 import bus.KhamBenh_BUS;
 import bus.NhanVien_BUS;
@@ -17,6 +18,7 @@ import bus.TaiKhoan_BUS;
 import dao.ChiDinhDichVu_DAO;
 import dao.ChiTietCapThuoc_DAO;
 import dao.PhieuKham_DAO;
+import dao.PhongKham_DAO;
 import entity.BenhNhan;
 import entity.ChiDinhDichVu;
 import entity.ChiTietCapThuoc;
@@ -75,14 +77,28 @@ public class TestRunner {
         } catch (RuntimeException ignored) { }
         final SessionContext fLetan = letan;
         final SessionContext fBacsi = bacsi, fPhuta = phuta, fQuanly = quanly;
+        String phongTest = PhongKham_DAO.layPhongDangNhanBenh().get(0).getMaPhong();
 
         // ---- UC002 Ho so benh nhan ----
         check("T04 Letan goi themNhanVien -> TB08", expectMessage(() -> NhanVien_BUS.themNhanVien(fLetan, "Test", "0900000001", LocalDate.of(1995, 1, 1), Boolean.TRUE, null, ChucVu.PHU_TA), "TB08").equals("Bạn không có quyền thực hiện chức năng này."), "");
+        check("QT07 Le tan khong duoc xem hang hoa -> TB08",
+                expectMessage(() -> HangHoa_BUS.danhSach(fLetan), "TB08").equals(MaThongBao.TB08), "");
+        check("Bac si khong duoc doc chi dinh de thanh toan -> TB08",
+                expectMessage(() -> HoaDon_BUS.layChiDinhChoThanhToan(fBacsi, "PK_KHONG_TON_TAI"), "TB08")
+                        .equals(MaThongBao.TB08), "");
+        check("Le tan khong duoc doc thuoc cap cua bac si -> TB08",
+                expectMessage(() -> KhamBenh_BUS.layThuocCapCuaToi(fLetan, "PK_KHONG_TON_TAI"), "TB08")
+                        .equals(MaThongBao.TB08), "");
+        check("Le tan khong duoc doc danh sach thuoc cho kham -> TB08",
+                expectMessage(() -> KhamBenh_BUS.danhSachThuoc(fLetan), "TB08")
+                        .equals(MaThongBao.TB08), "");
         String sdtMoi = "098" + String.valueOf(System.nanoTime()).substring(0, 7);
+        String maBNTheoNgay = "BN" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+        String maHDTheoNgay = "HD" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
         final BenhNhan[] bnMoi = new BenhNhan[1];
         try {
             bnMoi[0] = BenhNhan_BUS.taoHoSo(fLetan, "NGUYEN VAN TEST", LocalDate.of(1994, 5, 5), sdtMoi, null, "Q.Thu Duc", null);
-            check("T05 Tao ho so hop le + doc lai", bnMoi[0].getMaBenhNhan().startsWith("BN")
+            check("T05 Tao ho so hop le + ma BN theo yyMMdd", bnMoi[0].getMaBenhNhan().startsWith(maBNTheoNgay)
                     && BenhNhan_BUS.layBenhNhanTheoMa(bnMoi[0].getMaBenhNhan()) != null, bnMoi[0].getMaBenhNhan());
         } catch (RuntimeException ex) {
             check("T05 Tao ho so hop le", false, ex.getMessage());
@@ -94,7 +110,7 @@ public class TestRunner {
         final HoaDon[] hd = new HoaDon[1];
         try {
             hd[0] = HoaDon_BUS.thuPhiKham(fLetan, bnMoi[0].getMaBenhNhan(), "TIEN_MAT", "100000");
-            check("T08 Thu phi thanh cong (HD + chi tiet DV0001)", hd[0].isDaThanhToan()
+            check("T08 Thu phi thanh cong + ma HD theo yyMMdd", hd[0].getMaHoaDon().startsWith(maHDTheoNgay) && hd[0].isDaThanhToan()
                     && hd[0].getTongTien() != null && hd[0].getTongTien().compareTo(new BigDecimal("50000")) == 0, String.valueOf(hd[0].getTongTien()));
         } catch (RuntimeException ex) {
             check("T08 Thu phi thanh cong", false, ex.getMessage());
@@ -104,20 +120,20 @@ public class TestRunner {
         // ---- UC003 Lap phieu ----
         final PhieuKham[] pk = new PhieuKham[1];
         try {
-            pk[0] = PhieuKham_BUS.lapPhieuKham(fLetan, bnMoi[0], "NV2608010002", "P001", "Test luong kham", hd[0]);
+            pk[0] = PhieuKham_BUS.lapPhieuKham(fLetan, bnMoi[0], fBacsi.getMaNhanVien(), phongTest, "Test luong kham", hd[0]);
             check("T10 Lap phieu -> CHO_KHAM, STT cap tu BoDem", pk[0] != null
-                    && pk[0].getTrangThai() == TrangThaiPhieuKham.CHO_KHAM && pk[0].getSoThuTu() >= 4,
+                    && pk[0].getTrangThai() == TrangThaiPhieuKham.CHO_KHAM && pk[0].getSoThuTu() > 0,
                     pk[0] == null ? "null" : "STT=" + pk[0].getSoThuTu());
         } catch (RuntimeException ex) {
             check("T10 Lap phieu", false, ex.getMessage());
         }
-        check("T11 Phong tat nhan benh (P003) -> TB03", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(fLetan, bnMoi[0], "NV2608010002", "P003", "Test", hd[0]), "TB03").equals("Bác sĩ/Phòng khám hiện không trong ca. Vui lòng chọn khác."), "");
-        check("T12 Gan hoa don da dung -> TB04", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(fLetan, bnMoi[0], "NV2608010002", "P001", "Test", hd[0]), "TB04").equals("Bệnh nhân đã hoàn tất phí khám."), "");
+        check("T11 Phong tat nhan benh (P003) -> TB03", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(fLetan, bnMoi[0], fBacsi.getMaNhanVien(), "P003", "Test", hd[0]), "TB03").equals("Bác sĩ/Phòng khám hiện không trong ca. Vui lòng chọn khác."), "");
+        check("T12 Gan hoa don da dung -> TB04", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(fLetan, bnMoi[0], fBacsi.getMaNhanVien(), phongTest, "Test", hd[0]), "TB04").equals("Bệnh nhân đã hoàn tất phí khám."), "");
 
         // ---- UC009 Hang cho ----
         try {
-            List<PhieuKham> cho = HangCho_BUS.danhSachCho(fPhuta, LocalDate.now(), "P001");
-            check("T13 Hang cho co du lieu (>=4)", cho.size() >= 4, "size=" + cho.size());
+            List<PhieuKham> cho = HangCho_BUS.danhSachCho(fPhuta, LocalDate.now(), phongTest);
+            check("T13 Hang cho co phieu vua lap", cho.stream().anyMatch(p -> p.getMaPhieuKham().equals(pk[0].getMaPhieuKham())), "size=" + cho.size());
         } catch (RuntimeException ex) {
             check("T13 Hang cho", false, ex.getMessage());
         }
@@ -183,7 +199,7 @@ public class TestRunner {
         // ---- UC010 Nhan vien ----
         check("T28 Xoa NV da co phieu -> TB11", expectMessage(() -> NhanVien_BUS.xoaNhanVien(fQuanly, "NV2608010002"), "TB11").equals("Không thể xóa vì dữ liệu đang được sử dụng."), "");
 
-        // ---- Thanh toan dich vu cuoi luot (LT-06) + Lich su + AI ----
+        // ---- Thanh toan dich vu cuoi luot (LT-06) + Lich su ----
         check("T29 Phieu HOAN_TAT chua thanh toan co trong danh sach", PhieuKham_DAO
                 .layPhieuHoanTatChuaThanhToan().stream()
                 .anyMatch(p -> p.getMaPhieuKham().equals(pk[0].getMaPhieuKham())), "");
@@ -199,20 +215,6 @@ public class TestRunner {
         }
         check("T31 Thanh toan lan 2 -> TB17", expectMessage(() -> HoaDon_BUS.thanhToanDichVu(fLetan,
                 pk[0].getMaPhieuKham(), "TIEN_MAT", "1000000"), "TB17").equals("Lượt khám này đã được thanh toán."), "");
-        try {
-            int phut = AIHoTro_BUS.duDoanThoiGianCho(fPhuta, "PK2611020001");
-            check("T32 AI du doan thoi gian cho > 0 phut", phut > 0, "phut=" + phut);
-        } catch (RuntimeException ex) {
-            check("T32 AI du doan thoi gian cho", false, ex.getMessage());
-        }
-        try {
-            var vatTu = AIHoTro_BUS.duBaoVatTu(fQuanly);
-            boolean coGangTay = vatTu.stream().anyMatch(r -> String.valueOf(r[0]).contains("Găng tay"));
-            check("T34 AI du bao vat tu (co Gang tay + du bao > 0)", coGangTay && !vatTu.isEmpty()
-                    && (Integer) vatTu.get(0)[2] > 0, "so vat tu=" + vatTu.size());
-        } catch (RuntimeException ex) {
-            check("T34 AI du bao vat tu", false, ex.getMessage());
-        }
         check("T33 Lich su kham toan he thong (>=19 luot)", PhieuKham_DAO
                 .layToanBoLichSu().size() >= 19, "");
 

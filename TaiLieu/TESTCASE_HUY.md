@@ -1,13 +1,14 @@
 # BỘ TEST CASE — HOÀNG ĐÌNH HUY (24738801) — LUỒNG LỄ TÂN
 
 > Phạm vi: UC002 Hồ sơ bệnh nhân · UC005 Thu phí · UC003 Lập phiếu + in phiếu · UC006 Tra cứu · Thanh toán dịch vụ.
-> Backend liên quan: TestRunner T05–T12, T29–T31 (phải 34/34 PASS).
+> Backend liên quan: TestRunner T05–T12, T29–T31; trạng thái lần chạy gần nhất xem `TaiLieu/docs/ai/TEST_CASES.md`.
 > Kết quả thực tế ghi trực tiếp vào cột **KQ thực tế** + đánh dấu Đạt/Chưa — lưu lại làm minh chứng CLO4.
 
 ## TC-H01 — Quản lý hồ sơ bệnh nhân (UC002)
 
 | Mã | Bước thực hiện | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
+| H01-0 | Nhập SĐT vào ô tìm nhanh → Tìm SĐT; bấm Hiện tất cả | Bảng lọc đúng theo SĐT; Hiện tất cả tải lại danh sách đầy đủ, không hiện lịch sử khám | | |
 | H01-1 | Mở "Hồ sơ bệnh nhân" (không bấm gì) | Bảng hiện **full danh sách 10 bệnh nhân** với đủ CCCD/địa chỉ/tiền sử | | |
 | H01-2 | Bỏ trống họ tên → Thêm | Alert `VL01: Họ tên không được để trống.` | | |
 | H01-3 | SĐT nhập `090123456` (9 số) | Alert `VL02` | | |

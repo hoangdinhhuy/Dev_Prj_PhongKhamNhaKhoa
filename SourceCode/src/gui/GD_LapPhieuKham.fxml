@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+<BorderPane fx:id="khungLapPhieu" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="gui.GD_LapPhieuKham_Controller" prefWidth="760" prefHeight="480">
     <top><HBox styleClass="header" alignment="CENTER_LEFT" spacing="14"><Label text="Lập phiếu khám — cấp số thứ tự" styleClass="page-title"/><Region HBox.hgrow="ALWAYS"/></HBox></top>
     <center>
@@ -32,7 +32,7 @@
                    style="-fx-font-weight: bold; -fx-text-fill: #1F618D;"/>
             <HBox spacing="10" GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="3">
                 <Button fx:id="btn_lapPhieu" text="Lập phiếu" onAction="#lapPhieu" defaultButton="true"/>
-                <Button fx:id="btn_in" text="Xem / in phiếu PDF" onAction="#inPhieu" styleClass="print-action-btn"/>
+                <Button fx:id="btn_in" text="In hóa đơn" onAction="#inPhieu" styleClass="print-action-btn"/>
             </HBox>
         </GridPane>
     </center>
