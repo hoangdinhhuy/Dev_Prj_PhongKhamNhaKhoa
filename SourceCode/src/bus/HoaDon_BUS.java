@@ -14,7 +14,6 @@ import dao.HoaDon_DAO;
 import dao.PhieuKham_DAO;
 import entity.ChiDinhDichVu;
 import entity.ChiTietHoaDon;
-import entity.ChiTietHoaDon;
 import entity.ChucVu;
 import entity.DichVu;
 import entity.HoaDon;
@@ -58,12 +57,12 @@ public class HoaDon_BUS {
             hd.setTienKhachDua(tienDua);
             hd.setMaBenhNhan(maBN);
             hd.setMaNhanVien(session.getMaNhanVien());
+            ChiTietHoaDon cdPhi = new ChiTietHoaDon(maHD, MA_DICH_VU_PHI_KHAM, 1, phiKham.getDonGiaNiemYet());
+            hd.themChiTiet(cdPhi);          // entity TU TINH tongTien — khong co setter
             HoaDon_DAO.themHoaDon(con, hd);
-            ChiTietHoaDon_DAO.themChiTiet(con,
-                    new ChiTietHoaDon(maHD, MA_DICH_VU_PHI_KHAM, 1, phiKham.getDonGiaNiemYet()));
+            ChiTietHoaDon_DAO.themChiTiet(con, cdPhi);
             con.commit();
             con.setAutoCommit(true);
-            hd.setTongTien(phiKham.getDonGiaNiemYet());
             return hd;
         } catch (SQLException ex) {
             rollback(con);
@@ -71,7 +70,6 @@ public class HoaDon_BUS {
         }
     }
 
-    /** Hoa don phi kham da thu CHUA gan phieu - dung cho nut "Dung hoa don da thu". */
     public static HoaDon layHoaDonPhiChuaDung(SessionContext session, String maBenhNhan) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         return HoaDon_DAO.layHoaDonPhiChuaDungTheoBN(maBenhNhan);
@@ -79,7 +77,9 @@ public class HoaDon_BUS {
 
     public static List<ChiDinhDichVu> layChiDinhChoThanhToan(SessionContext session, String maPhieuKham) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
-        return ChiDinhDichVu_DAO.layTheoPhieu(maPhieuKham);
+        return ChiDinhDichVu_DAO.layTheoPhieu(maPhieuKham).stream()
+                .filter(cd -> cd.getDonGia() != null && cd.getDonGia().signum() > 0)
+                .toList();
     }
 
     public static List<ChiTietHoaDon> layChiTietHoaDon(SessionContext session, String maHoaDon) {
@@ -99,7 +99,9 @@ public class HoaDon_BUS {
         if (pk == null || pk.getTrangThai() != TrangThaiPhieuKham.HOAN_TAT) {
             throw new IllegalArgumentException(MaThongBao.TB10);
         }
-        List<ChiDinhDichVu> chiDinh = ChiDinhDichVu_DAO.layTheoPhieu(maPhieuKham);
+        List<ChiDinhDichVu> chiDinh = ChiDinhDichVu_DAO.layTheoPhieu(maPhieuKham).stream()
+                .filter(cd -> cd.getDonGia() != null && cd.getDonGia().signum() > 0)
+                .toList();
         if (chiDinh.isEmpty()) {
             throw new IllegalArgumentException(MaThongBao.TB06);
         }
@@ -123,17 +125,17 @@ public class HoaDon_BUS {
             hd.setHinhThucThanhToan(hinhThucThanhToan);
             hd.setDaThanhToan(true);
             hd.setTienKhachDua(tienDua);
-            hd.setMaBenhNhan(pk.getMaBenhNhan());
+            hd.setBenhNhan(pk.getBenhNhan());   // dung doi tuong tu phieu kham (P2-1)
             hd.setMaNhanVien(session.getMaNhanVien());
             hd.setMaPhieuKham(maPhieuKham);
             HoaDon_DAO.themHoaDon(con, hd);
-            for (ChiDinhDichVu cd : chiDinh) {
-                ChiTietHoaDon_DAO.themChiTiet(con,
-                        new ChiTietHoaDon(maHD, cd.getMaDichVu(), 1, cd.getDonGia()));
+            for (ChiDinhDichVu cdd : chiDinh) {
+                ChiTietHoaDon ctd = new ChiTietHoaDon(maHD, cdd.getMaDichVu(), 1, cdd.getDonGia());
+                hd.themChiTiet(ctd);    // dan xuat tu tinh
+                ChiTietHoaDon_DAO.themChiTiet(con, ctd);
             }
             con.commit();
             con.setAutoCommit(true);
-            hd.setTongTien(tong);
             return hd;
         } catch (SQLException ex) {
             rollback(con);
@@ -154,6 +156,37 @@ public class HoaDon_BUS {
             maHD = BoDem_DAO.layMaMoi(con, "HD", LocalDateTime.now().toLocalDate());
         } while (HoaDon_DAO.tonTaiMa(con, maHD));
         return maHD;
+    }
+
+    /** (Chốt ca thu ngân) Bảng kê hóa đơn đã thu trong ngày — lễ tân kiêm thu ngân kiểm kê. */
+    public static java.util.List<HoaDon> layHoaDonDaThuHomNay(SessionContext session) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
+        return HoaDon_DAO.layHoaDonDaThuHomNay(java.time.LocalDate.now());
+    }
+
+    /** (Chốt ca — đúng nghiệp vụ thu ngân) DOANH THU CA = tiền thu ở DỊCH VỤ cuối lượt
+     *  (hóa đơn gắn phiếu khám). Phí khám đầu vào là tiền thu hộ, KHÔNG tính vào doanh thu ca. */
+    public static java.math.BigDecimal doanhThuCaHomNay(SessionContext session) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
+        java.math.BigDecimal ca = java.math.BigDecimal.ZERO;
+        for (HoaDon hd : layHoaDonDaThuHomNay(session)) {
+            if (hd.getMaPhieuKham() != null && hd.getTongTien() != null) {
+                ca = ca.add(hd.getTongTien());
+            }
+        }
+        return ca;
+    }
+
+    /** (Chốt ca) Phí khám đầu vào đã thu hộ trong ngày — liệt kê, không tính vào doanh thu ca. */
+    public static java.math.BigDecimal phiThuHoHomNay(SessionContext session) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
+        java.math.BigDecimal ho = java.math.BigDecimal.ZERO;
+        for (HoaDon hd : layHoaDonDaThuHomNay(session)) {
+            if (hd.getMaPhieuKham() == null && hd.getTongTien() != null) {
+                ho = ho.add(hd.getTongTien());
+            }
+        }
+        return ho;
     }
 
     private HoaDon_BUS() { }

@@ -104,8 +104,8 @@ public class GD_ThuPhi_Controller {
             }
             HoaDon hd = HoaDon_BUS.thuPhiKham(App.session, benhNhan.getMaBenhNhan(),
                     cbb_hinhThuc.getValue(), txt_tienKhachDua.getText());
-            hoaDonDaThu = hd;
-            hd.setTenBenhNhan(benhNhan.getHoTen());
+            hoaDonDaThu = hd; // giua hoa don da thu de xem va
+            hd.setBenhNhan(benhNhan);
             lb_hoaDon.setText("Đã thu: " + hd.getMaHoaDon() + " - " + FormatUtil.tien(hd.getTongTien()));
             btn_xemHoaDon.setDisable(false);
             AlertUtil.baoThongTin("Thu phí thành công. Hóa đơn " + hd.getMaHoaDon()

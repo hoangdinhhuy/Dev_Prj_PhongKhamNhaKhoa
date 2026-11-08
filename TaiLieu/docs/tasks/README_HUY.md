@@ -55,7 +55,7 @@ public BenhNhan taoHoSo(SessionContext session, String hoTen, LocalDate ngaySinh
 public BenhNhan capNhatHoSo(SessionContext session, BenhNhan benhNhan)
 ```
 
-Quy tắc nghiệp vụ: (1) `QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN)`; (2) validate theo bảng RULES; (3) trùng CCCD (nếu nhập) → ném **TB13**; (4) trùng SĐT → trả danh sách BN trùng để GUI hỏi "Vẫn tạo hồ sơ mới?" (SĐT **không** là mã định danh duy nhất — quyết định nhóm đã chốt); (5) mã `BNyyMMddNNNN` cấp qua `BoDem_DAO` trong transaction.
+Quy tắc nghiệp vụ: (1) `QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN)`; (2) validate theo bảng RULES; (3) trùng CCCD (nếu nhập) → ném **TB13**; (4) trùng SĐT → ném **TB20**, không cho tạo/cập nhật; (5) mã `BNyyMMddNNNN` cấp qua `BoDem_DAO` trong transaction.
 
 **DAO — `BenhNhan_DAO`:** `themBenhNhan`, `suaBenhNhan`, `getAllBenhNhan`, `layBenhNhanTheoMa`, `layBenhNhanTheoSDT`, `layBenhNhanTheoCCCD`, `demBenhNhanHomNay`. Liệt kê đúng cột, không `SELECT *`.
 
@@ -70,7 +70,7 @@ Quy tắc nghiệp vụ: (1) `QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN)`; (
 | TC-LT01-03 | SĐT 9 số | Alert VL02 |
 | TC-LT01-04 | CCCD 11 số | Alert VL03 |
 | TC-LT01-05 | CCCD trùng BN khác | Alert TB13 |
-| TC-LT01-06 | SĐT trùng | GUI hỏi xác nhận, chọn Có → vẫn tạo |
+| TC-LT01-06 | SĐT trùng | Alert TB20, không cho tạo hồ sơ |
 | TC-LT01-07 | Sửa hồ sơ từ dòng chọn | Cập nhật đúng dòng, bảng refresh |
 | TC-LT01-08 | Ngắt mạng DB giữa lúc lưu | TB09, DB không có bản ghi một phần |
 

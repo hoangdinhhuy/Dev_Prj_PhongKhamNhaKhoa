@@ -7,12 +7,14 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import connectDB.ConnectDB;
+import entity.ChiTietHoaDon;
 import entity.HoaDon;
 
 public class HoaDon_DAO {
 
     private static final String COLS = "hd.maHoaDon, hd.ngayThu, hd.hinhThucThanhToan, hd.daThanhToan,"
-            + " hd.tienKhachDua, hd.maBenhNhan, hd.maNhanVien, hd.maPhieuKham, bn.hoTen AS tenBenhNhan,"
+            + " hd.tienKhachDua, hd.maBenhNhan, hd.maNhanVien, hd.maPhieuKham, bn.hoTen AS tenBenhNhan, bn.soDienThoai AS bnSdt,"
+            + " nv.hoTen AS tenNhanVien,"
             + " (SELECT SUM(ct.thanhTien) FROM ChiTietHoaDon ct WHERE ct.maHoaDon = hd.maHoaDon) AS tongTien";
 
     private static HoaDon map(ResultSet rs) throws SQLException {
@@ -26,8 +28,12 @@ public class HoaDon_DAO {
         hd.setMaBenhNhan(rs.getString("maBenhNhan"));
         hd.setMaNhanVien(rs.getString("maNhanVien"));
         hd.setMaPhieuKham(rs.getString("maPhieuKham"));
-        hd.setTenBenhNhan(rs.getString("tenBenhNhan"));
-        hd.setTongTien(rs.getBigDecimal("tongTien"));
+        // Quan he doi tuong (Gop y GV P2-2): HoaDon gan BenhNhan (khach hang) + NhanVien (nguoi lap)
+        hd.setBenhNhan(new entity.BenhNhan(rs.getString("maBenhNhan"), rs.getString("tenBenhNhan"),
+                rs.getString("bnSdt"), null, null, null, null));
+        entity.NhanVien nv = new entity.NhanVien(rs.getString("maNhanVien"));
+        nv.setHoTen(rs.getString("tenNhanVien"));
+        hd.setNhanVien(nv);
         return hd;
     }
 
@@ -59,7 +65,9 @@ public class HoaDon_DAO {
     }
 
     public static HoaDon layHoaDonTheoMa(String maHoaDon) {
-        String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+        String sql = "SELECT " + COLS + " FROM HoaDon hd"
+                + " JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " LEFT JOIN NhanVien nv ON nv.maNhanVien = hd.maNhanVien"
                 + " WHERE hd.maHoaDon = ?";
         Connection con = ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql)) {
@@ -77,7 +85,9 @@ public class HoaDon_DAO {
 
     /** Hoa don phi kham (DV0001) da thanh toan, CHUA gan phieu kham nao - de chan thu trung / dung lai. */
     public static HoaDon layHoaDonPhiChuaDungTheoBN(String maBenhNhan) {
-        String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+        String sql = "SELECT " + COLS + " FROM HoaDon hd"
+                + " JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " LEFT JOIN NhanVien nv ON nv.maNhanVien = hd.maNhanVien"
                 + " JOIN ChiTietHoaDon ct ON ct.maHoaDon = hd.maHoaDon AND ct.maDichVu = 'DV0001'"
                 + " WHERE hd.maBenhNhan = ? AND hd.daThanhToan = 1"
                 + " AND NOT EXISTS (SELECT 1 FROM PhieuKham pk WHERE pk.maHoaDonPhiKham = hd.maHoaDon)"
@@ -87,7 +97,7 @@ public class HoaDon_DAO {
             pstm.setString(1, maBenhNhan);
             try (ResultSet rs = pstm.executeQuery()) {
                 if (rs.next()) {
-                    return map(rs);
+                    return nap(map(rs));
                 }
             }
         } catch (SQLException ex) {
@@ -98,20 +108,54 @@ public class HoaDon_DAO {
 
     /** Hoa don dich vu da lien ket voi mot luot kham (kiem tra da thanh toan chua). */
     public static HoaDon layHoaDonTheoPhieu(String maPhieuKham) {
-        String sql = "SELECT " + COLS + " FROM HoaDon hd JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+        String sql = "SELECT " + COLS + " FROM HoaDon hd"
+                + " JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " LEFT JOIN NhanVien nv ON nv.maNhanVien = hd.maNhanVien"
                 + " WHERE hd.maPhieuKham = ?";
         Connection con = ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql)) {
             pstm.setString(1, maPhieuKham);
             try (ResultSet rs = pstm.executeQuery()) {
                 if (rs.next()) {
-                    return map(rs);
+                    return nap(map(rs));
                 }
             }
         } catch (SQLException ex) {
             throw new RuntimeException("Lỗi truy vấn hóa đơn theo phiếu", ex);
         }
         return null;
+    }
+
+
+    /** Nap chi tiet vao hoa don → entity tu tinh tongTien (khong dung setter). */
+    private static HoaDon nap(HoaDon hd) {
+        for (ChiTietHoaDon ct : ChiTietHoaDon_DAO.layChiTietTheoHoaDon(hd.getMaHoaDon())) {
+            hd.themChiTiet(ct);
+        }
+        return hd;
+    }
+
+    /** (Chốt ca thu ngân) Toàn bộ hóa đơn ĐÃ THU trong ngày — bảng kê bàn giao ca. */
+    public static ArrayList<HoaDon> layHoaDonDaThuHomNay(java.time.LocalDate homNay) {
+        String sql = "SELECT " + COLS
+                + " FROM HoaDon hd"
+                + " JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " LEFT JOIN NhanVien nv ON nv.maNhanVien = hd.maNhanVien"
+                + " WHERE hd.daThanhToan = 1 AND CAST(hd.ngayThu AS date) = ?"
+                + " ORDER BY hd.ngayThu";
+        ArrayList<HoaDon> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setDate(1, java.sql.Date.valueOf(homNay));
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    ds.add(nap(map(rs)));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn bảng kê thu hôm nay", ex);
+        }
+        return ds;
     }
 
     private HoaDon_DAO() { }

@@ -13,13 +13,14 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import main.App;
 import bus.BenhNhan_BUS;
+import bus.PhieuKham_BUS;
 import entity.BenhNhan;
 import entity.PhieuKham;
 import util.AlertUtil;
 import util.FormatUtil;
 import util.MaThongBao;
 
-/** UC006 - Tra cuu ho so benh nhan (chu file: Huy). */
+/** UC006 - Tra cuu ho so benh nhan + lich su phieu kham (chu file: Huy). */
 public class GD_TraCuuBenhNhan_Controller {
 
     @FXML private ComboBox<String> cbb_tieuChi;
@@ -29,6 +30,8 @@ public class GD_TraCuuBenhNhan_Controller {
     @FXML private TableColumn<BenhNhan, String> cl_ma;
     @FXML private TableColumn<BenhNhan, String> cl_hoTen;
     @FXML private TableColumn<BenhNhan, String> cl_sdt;
+    @FXML private TableColumn<BenhNhan, String> cl_cccd;
+    @FXML private TableColumn<BenhNhan, String> cl_diaChi;
     @FXML private TableColumn<BenhNhan, String> cl_tienSu;
 
     @FXML
@@ -40,6 +43,10 @@ public class GD_TraCuuBenhNhan_Controller {
         cl_ma.setCellValueFactory(new PropertyValueFactory<>("maBenhNhan"));
         cl_hoTen.setCellValueFactory(new PropertyValueFactory<>("hoTen"));
         cl_sdt.setCellValueFactory(new PropertyValueFactory<>("soDienThoai"));
+        cl_cccd.setCellValueFactory(cd -> new SimpleStringProperty(
+                cd.getValue().getCccd() == null ? "" : cd.getValue().getCccd()));
+        cl_diaChi.setCellValueFactory(cd -> new SimpleStringProperty(
+                cd.getValue().getDiaChi() == null ? "" : cd.getValue().getDiaChi()));
         cl_tienSu.setCellValueFactory(cd -> new SimpleStringProperty(
                 cd.getValue().getTienSuDiUng() == null ? "" : cd.getValue().getTienSuDiUng()));
         table_ketQua.setOnMouseClicked(e -> {
@@ -47,8 +54,18 @@ public class GD_TraCuuBenhNhan_Controller {
                 xemChiTiet();
             }
         });
-        // mo man: hien toan bo danh sach benh nhan; bam Tim moi loc
-        nap(BenhNhan_BUS.danhSachToanBo(App.session));
+        // (Góp ý GV 2/5 — cách 1, user chốt) Mở màn: bảng TRỐNG cho tới khi bấm Tìm.
+        nap(java.util.List.of());
+    }
+
+    /** Nút tường minh: người dùng yêu cầu rõ ràng mới tải toàn bộ (không bao giờ tải mặc định). */
+    @FXML
+    private void hienTatCa() {
+        try {
+            nap(BenhNhan_BUS.danhSachToanBo(App.session));
+        } catch (RuntimeException ex) {
+            AlertUtil.baoLoi(ex.getMessage());
+        }
     }
 
     private void nap(java.util.List<BenhNhan> ds) {
@@ -69,38 +86,51 @@ public class GD_TraCuuBenhNhan_Controller {
         }
     }
 
+    /** Chi tiết hồ sơ + lịch sử phiếu khám (double-click). */
     private void xemChiTiet() {
         BenhNhan bn = table_ketQua.getSelectionModel().getSelectedItem();
         if (bn == null) {
             return;
         }
         StringBuilder sb = new StringBuilder();
+        sb.append("Mã BN: ").append(bn.getMaBenhNhan()).append("\n");
         sb.append("Họ tên: ").append(bn.getHoTen()).append("\n");
         sb.append("SĐT: ").append(bn.getSoDienThoai()).append("\n");
-        sb.append("CCCD: ").append(bn.getCccd() == null ? "(không có)" : bn.getCccd()).append("\n");
-        sb.append("Ngày sinh: ").append(FormatUtil.ngay(bn.getNgaySinh())).append("\n");
-        sb.append("Địa chỉ: ").append(bn.getDiaChi() == null ? "" : bn.getDiaChi()).append("\n");
-        sb.append("Tiền sử dị ứng: ").append(bn.getTienSuDiUng() == null ? "" : bn.getTienSuDiUng()).append("\n\n");
-        sb.append("LỊCH SỬ PHIẾU KHÁM:\n");
-        var dsPhieu = BenhNhan_BUS.layLichSuPhieuKham(App.session, bn.getMaBenhNhan());
-        if (dsPhieu.isEmpty()) {
-            sb.append("(chưa có phiếu khám nào)");
-        } else {
-            for (PhieuKham pk : dsPhieu) {
-                sb.append(String.format("%s | %s | STT %d | %s | %s%n", pk.getMaPhieuKham(),
-                        FormatUtil.ngay(pk.getNgayKham()), pk.getSoThuTu(), pk.getLyDoKham(), pk.getTrangThai()));
+        sb.append("CCCD: ").append(bn.getCccd() == null ? "(không)" : bn.getCccd()).append("\n");
+        sb.append("Ngày sinh: ").append(bn.getNgaySinh() == null ? "(không)"
+                : FormatUtil.ngay(bn.getNgaySinh())).append("\n");
+        sb.append("Địa chỉ: ").append(bn.getDiaChi() == null ? "(không)" : bn.getDiaChi()).append("\n");
+        sb.append("Tiền sử dị ứng: ").append(bn.getTienSuDiUng() == null ? "(không)" : bn.getTienSuDiUng()).append("\n");
+        sb.append("\n----- LỊCH SỬ PHIẾU KHÁM -----\n");
+        try {
+            var ls = BenhNhan_BUS.layLichSuPhieuKham(App.session, bn.getMaBenhNhan());
+            if (ls.isEmpty()) {
+                sb.append("(chưa có lượt khám nào)\n");
             }
+            int lan = 0;
+            for (PhieuKham pk : ls) {
+                lan++;
+                sb.append("Lần ").append(lan).append(": ").append(pk.getMaPhieuKham())
+                        .append(" — ").append(FormatUtil.ngay(pk.getNgayKham()))
+                        .append(" — ").append(pk.getTrangThai())
+                        .append(" — ").append(pk.getChanDoan() == null ? pk.getLyDoKham() : pk.getChanDoan());
+                if (pk.getPhacDieuTri() != null) {
+                    sb.append(" — phác đồ: ").append(pk.getPhacDieuTri());
+                }
+                sb.append("\n");
+            }
+        } catch (RuntimeException ex) {
+            sb.append("(không đọc được lịch sử: ").append(ex.getMessage()).append(")\n");
         }
         javafx.scene.control.TextArea ta = new javafx.scene.control.TextArea(sb.toString());
         ta.setEditable(false);
-        ta.setWrapText(true);
         ta.setPrefSize(560, 420);
         Stage stage = new Stage();
         stage.initOwner(table_ketQua.getScene().getWindow());
         stage.initModality(Modality.WINDOW_MODAL);
-        stage.setTitle("Chi tiết hồ sơ " + bn.getMaBenhNhan());
+        stage.setTitle("Chi tiết hồ sơ " + bn.getMaBenhNhan() + " — " + bn.getHoTen());
         javafx.scene.Scene sc = new javafx.scene.Scene(ta);
-        main.App.ganTheme(sc);
+        App.ganTheme(sc);
         stage.setScene(sc);
         stage.showAndWait();
     }

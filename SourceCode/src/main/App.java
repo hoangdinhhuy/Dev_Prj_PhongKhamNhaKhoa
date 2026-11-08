@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import connectDB.ConnectDB;
 import entity.SessionContext;
+import gui.GD_Chinh_Controller;
 
 /** Entry point + dieu huong 1 cua so (setRoot/openModal) + phien dang nhap. Chu file: Duy. */
 public class App extends Application {
@@ -19,6 +20,34 @@ public class App extends Application {
     public static SessionContext session;
     private static Stage primaryStage;
     private static Scene scene;
+    private static GD_Chinh_Controller manHinhChinh;
+    private static Object yeuCauChuyenManHinh;
+
+    public static void ganManHinhChinh(GD_Chinh_Controller controller) {
+        manHinhChinh = controller;
+    }
+
+    public static Object layYeuCauChuyenManHinh() {
+        Object yeuCau = yeuCauChuyenManHinh;
+        yeuCauChuyenManHinh = null;
+        return yeuCau;
+    }
+
+    public static void moManHinh(String tenFxml, Object yeuCau) {
+        yeuCauChuyenManHinh = yeuCau;
+        if (manHinhChinh != null) manHinhChinh.moFxml(tenFxml);
+    }
+
+    public static void dangXuat() {
+        session = null;
+        manHinhChinh = null;
+        yeuCauChuyenManHinh = null;
+        setRoot("GD_DangNhap");
+    }
+
+    public static void maximizeChinh() {
+        primaryStage.setMaximized(true);
+    }
 
     /** Tieu de hien thi cua cac man hinh (tieng Viet, khong dung ma FXML). */
     private static final java.util.Map<String, String> TIEU_DE = java.util.Map.ofEntries(

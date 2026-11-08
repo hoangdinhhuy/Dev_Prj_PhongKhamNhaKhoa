@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light"><title>Bảng gọi số — Nha khoa Sài Gòn</title>
+  <style>
+    *{box-sizing:border-box}body{margin:0;background:#edf4fc;color:#123553;font-family:Segoe UI,Arial,sans-serif;min-height:100vh}
+    header{height:108px;background:#124f9e;color:#fff;display:flex;align-items:center;padding:0 4vw;gap:22px;box-shadow:0 4px 18px #153d6624}
+    .mark{width:66px;height:66px;border-radius:18px;background:#fff;color:#12539c;display:grid;place-items:center;font-size:38px;font-weight:800}
+    h1{font-size:clamp(24px,3vw,42px);margin:0;letter-spacing:.03em}.sub{opacity:.83;font-size:16px;margin-top:4px}
+    .connection{margin-left:auto;border:1px solid #ffffff66;border-radius:30px;padding:10px 18px;font-size:15px}.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ffc857;margin-right:8px}.audioState{font-size:13px;opacity:.8;margin-top:5px;text-align:right}.audioEnable{margin-left:10px;border:1px solid #ffffff88;background:#fff;color:#12539c;border-radius:9px;padding:9px 13px;font-weight:700;cursor:pointer}
+    main{max-width:1500px;margin:4vh auto;padding:0 4vw}.now{background:#fff;border-radius:28px;padding:clamp(28px,5vw,68px);text-align:center;box-shadow:0 12px 40px #12355313;border:1px solid #d7e5f4}
+    .label{text-transform:uppercase;letter-spacing:.17em;color:#63809b;font-weight:700;font-size:clamp(14px,1.4vw,20px)}.number{font-size:clamp(110px,23vw,300px);line-height:.95;font-weight:800;letter-spacing:.04em;color:#1262b1;margin:10px 0}
+    .room{font-size:clamp(32px,5vw,68px);font-weight:700;color:#102d4b}.recent{margin-top:24px;background:#fff;border-radius:20px;padding:24px 30px;border:1px solid #d7e5f4}.recent h2{margin:0 0 12px;font-size:20px}.row{display:grid;grid-template-columns:1fr 2fr 2fr;gap:16px;padding:12px 4px;border-top:1px solid #e7edf4;font-size:clamp(17px,2vw,25px)}.empty{color:#8092a3;padding:14px}
+    @media(max-width:650px){header{height:84px;padding:0 18px;gap:12px}.mark{width:50px;height:50px;font-size:30px}.sub{display:none}.connection{font-size:12px;padding:8px}main{margin:20px auto;padding:0 12px}.recent{padding:16px}}
+  </style>
+</head>
+<body>
+  <header><div class="mark" aria-hidden="true">✚</div><div><h1>NHA KHOA SÀI GÒN</h1><div class="sub">BẢNG GỌI SỐ THỨ TỰ</div></div><div style="margin-left:auto"><div class="connection" id="connection"><i class="dot"></i>Đang kết nối</div><div id="audioStatus" class="audioState">Bấm bật âm thanh lần đầu</div></div><button id="enableAudio" class="audioEnable">Bật âm thanh</button></header>
+  <main><section class="now" aria-live="polite"><div class="label">Số thứ tự đang mời</div><div class="number" id="number">—</div><div class="room" id="room">Vui lòng chờ gọi số</div></section>
+    <section class="recent"><h2>Vừa được gọi</h2><div id="recent" class="empty">Chưa có lượt gọi</div></section></main>
+  <script>
+    const $=id=>document.getElementById(id), seen=new Set(), pendingAudio=new Map(), queue=[];let playing=false,current=null,audioEnabled=false,recent=[];
+    $('enableAudio').addEventListener('click',()=>{audioEnabled=true;$('audioStatus').textContent='Âm thanh đã bật';if('speechSynthesis'in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance('');u.lang='vi-VN';speechSynthesis.speak(u)}$('enableAudio').textContent='Âm thanh đã bật';playNext()});
+    function connection(ok){$('connection').innerHTML='<i class="dot" style="background:'+(ok?'#65e59c':'#ffc857')+'"></i>'+(ok?'Đang kết nối':'Đang kết nối lại')}
+    function render(list){const a=list||[];if(!a.length){$('recent').className='empty';$('recent').textContent='Chưa có lượt gọi';return} $('recent').className='';$('recent').replaceChildren(...a.slice(0,5).map(e=>{const row=document.createElement('div');row.className='row';for(const val of [e.stt,'Phòng '+e.room,e.type==='RECALL'?'Gọi lại':'Mời vào khám']){const c=document.createElement('span');c.textContent=val;row.append(c)}return row}))}
+    function snapshot(){fetch('/api/snapshot',{cache:'no-store'}).then(r=>r.json()).then(d=>{recent=d.recent||[];if(recent.length){$('number').textContent=recent[0].stt;$('room').textContent='Phòng khám '+recent[0].room}render(recent)}).catch(()=>{})}
+    function speakFallback(e){if(!('speechSynthesis'in window)){$('audioStatus').textContent='Thiết bị không hỗ trợ phát giọng đọc.';return Promise.resolve()}const voices=speechSynthesis.getVoices();if(voices.length&&!voices.some(v=>v.lang.toLowerCase().startsWith('vi'))){$('audioStatus').textContent='Không tìm thấy giọng đọc tiếng Việt ngoại tuyến.';return Promise.resolve()}return new Promise(done=>{const u=new SpeechSynthesisUtterance(e.text);u.lang='vi-VN';u.rate=.92;u.onend=()=>{$('audioStatus').textContent='';done()};u.onerror=()=>{$('audioStatus').textContent='Không phát được âm thanh. Kiểm tra loa hoặc cấu hình TTS.';done()};$('audioStatus').textContent='Đang phát lời mời';window.speechSynthesis.speak(u)})}
+    async function playNext(){if(playing||!queue.length)return;playing=true;const e=queue.shift();current=e;if(!audioEnabled){$('audioStatus').textContent='Bấm “Bật âm thanh” để nghe lời mời';await new Promise(r=>{const t=setInterval(()=>{if(audioEnabled){clearInterval(t);r()}},250)})}const until=Date.now()+1800;while(!pendingAudio.has(e.eventId)&&Date.now()<until)await new Promise(r=>setTimeout(r,100));const url=pendingAudio.get(e.eventId);if(url){pendingAudio.delete(e.eventId);await new Promise(done=>{const a=new Audio(url);a.onended=done;a.onerror=done;a.play().catch(()=>done())})}else await speakFallback(e);current=null;playing=false;playNext()}
+    const stream=new EventSource('/api/events');stream.onopen=()=>connection(true);stream.onerror=()=>connection(false);
+    stream.addEventListener('snapshot',ev=>{const d=JSON.parse(ev.data);recent=d.recent||[];if(recent.length){$('number').textContent=recent[0].stt;$('room').textContent='Phòng khám '+recent[0].room}render(recent)});
+    stream.addEventListener('call',ev=>{const e=JSON.parse(ev.data);if(seen.has(e.eventId))return;seen.add(e.eventId);if(seen.size>1000)seen.clear();$('number').textContent=e.stt;$('room').textContent='Phòng khám '+e.room;recent=[e,...recent.filter(item=>item.eventId!==e.eventId)].slice(0,5);render(recent);queue.push(e);playNext()});
+    stream.addEventListener('audioReady',ev=>{const e=JSON.parse(ev.data);pendingAudio.set(e.eventId,e.url);$('audioStatus').textContent=''});
+    stream.addEventListener('audioError',()=>{$('audioStatus').textContent='Dùng giọng đọc ngoại tuyến nếu thiết bị có hỗ trợ.'});snapshot();
+  </script>
+</body></html>

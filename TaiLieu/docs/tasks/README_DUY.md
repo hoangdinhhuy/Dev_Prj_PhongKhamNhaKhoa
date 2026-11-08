@@ -61,7 +61,7 @@ Quy tắc: `trim()` cả hai; đối chiếu DB (`TaiKhoan_DAO.getTaiKhoanTheoTe
 
 **DAO — `TaiKhoan_DAO`:** `getTaiKhoanTheoTenDangNhap`, `capNhatLanDangNhap`, `themTaiKhoan`, `capNhatTaiKhoan`, `khoaMoTaiKhoan`.
 
-**SQL:** `002_nhanvien_taikhoan.sql` — `NhanVien(maNhanVien PK NVyyMMddNNNN, hoTen, soDienThoai, CCCD, chucVu nvarchar CHECK IN (LE_TAN,BAC_SI,PHU_TA,QUAN_LY), ...)`; `TaiKhoan(tenDangNhap PK, matKhauHash, trangThai CHECK IN (HOAT_DONG,BI_KHOA), maNhanVien FK UNIQUE)`; seed 4 tài khoản chuẩn: `letan/123456`, `bacsi/123456`, `phuta/123456`, `quanly/123456` (ghi rõ trong seed + demo.md).
+**SQL:** `002_nhanvien_taikhoan.sql` — `NhanVien(maNhanVien PK NVyyMMddNNNN, hoTen, soDienThoai, CCCD, chucVu nvarchar CHECK IN (LE_TAN,BAC_SI,PHU_TA,QUAN_LY), ...)`; `TaiKhoan(tenDangNhap PK, matKhauHash, trangThai CHECK IN (HOAT_DONG,BI_KHOA), maNhanVien FK UNIQUE)`; seed 4 tài khoản chuẩn: `NV0001/123456`, `bacsi/123456`, `NV0005/123456`, `NV0007/123456` (ghi rõ trong seed + demo.md).
 
 **Test case:** đăng nhập đúng từng vai trò → đúng menu (TC-QT02-01..04); sai mật khẩu → TB01 (05); tài khoản khóa → TB02 và không vào được (06); rỗng → VL13 (07); mật khẩu trong DB là hash không phải gốc (08); Đăng xuất → session dọn sạch, Back không vào lại màn cũ (09).
 

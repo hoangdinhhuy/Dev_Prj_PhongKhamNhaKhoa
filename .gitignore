@@ -1,7 +1,7 @@
-target/
-bin/
-build/
-out/
+/target/
+/bin/
+/build/
+/out/
 *.class
 *.log
 *.iml
@@ -10,10 +10,4 @@ out/
 .classpath
 .project
 .DS_Store
-**/db.properties
-.env
-.env.*
-!**/.env.example
-**/service-account*.json
-SourceCode/data/tts-cache/
-SourceCode/DATA/backup/*.bak
+src/main/resources/db.properties

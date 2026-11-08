@@ -58,7 +58,8 @@ public class KhamBenh_BUS {
     /** UC004 - luu kham: UPDATE phieu (dieu kien DANG_KHAM + chu phieu) + ho so + chi dinh + thuoc, 1 transaction. */
     public static void luuKham(SessionContext session, String maPhieuKham, String chanDoan, String ketQuaDieuTri,
                                String ghiChuThuocTuMua, List<ChiDinhDichVu> dsChiDinh,
-                               List<ChiTietCapThuoc> dsThuocCap) {
+                               List<ChiTietCapThuoc> dsThuocCap, String phacDieuTri,
+                               java.time.LocalDate ngayHenTiep) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI);
         String cd = ValidateUtil.khongRong(chanDoan, MaThongBao.VL09);
         if (dsChiDinh == null || dsChiDinh.isEmpty()) {
@@ -84,7 +85,8 @@ public class KhamBenh_BUS {
             con.setAutoCommit(false);
             String maHoSo = HoSoBenhAn_BUS.taoHoSoNeuChuaCo(con, pk.getMaBenhNhan(), null);
             int n = PhieuKham_DAO.capNhatThongTinKham(con, maPhieuKham, session.getMaNhanVien(),
-                    cd, emptyThanNull(ketQuaDieuTri), emptyThanNull(ghiChuThuocTuMua), maHoSo);
+                    cd, emptyThanNull(ketQuaDieuTri), emptyThanNull(ghiChuThuocTuMua), maHoSo,
+                    emptyThanNull(phacDieuTri), ngayHenTiep);
             if (n == 0) {
                 throw new SQLException(MaThongBao.TB10);
             }
@@ -131,6 +133,12 @@ public class KhamBenh_BUS {
         if (n == 0) {
             throw new IllegalArgumentException(MaThongBao.TB10);
         }
+    }
+
+    /** (Gop y GV 2/7) Lan dieu tri thu N cua benh nhan: = so phieu da co (moi trang thai) + 1. */
+    public static int lanDieuTriThuHienTai(SessionContext session, String maBenhNhan) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI);
+        return PhieuKham_DAO.demTheoBenhNhan(maBenhNhan) + 1;
     }
 
     private static String emptyThanNull(String s) {

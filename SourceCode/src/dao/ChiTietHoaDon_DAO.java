@@ -22,7 +22,7 @@ public class ChiTietHoaDon_DAO {
             pstm.executeUpdate();
         }
     }
-
+    //Ghép thông tin bệnh nhân/dịch vụ với hóa đơn để đưa vào mẫu xem và in.
     public static ArrayList<ChiTietHoaDon> layChiTietTheoHoaDon(String maHoaDon) {
         String sql = "SELECT ct.maHoaDon, ct.maDichVu, ct.soLuong, ct.donGia, ct.thanhTien, dv.tenDichVu"
                 + " FROM ChiTietHoaDon ct JOIN DichVu dv ON dv.maDichVu = ct.maDichVu WHERE ct.maHoaDon = ?";
@@ -34,8 +34,10 @@ public class ChiTietHoaDon_DAO {
                 while (rs.next()) {
                     ChiTietHoaDon ct = new ChiTietHoaDon(rs.getString(1), rs.getString(2), rs.getInt(3),
                             rs.getBigDecimal(4));
-                    ct.setThanhTien(rs.getBigDecimal(5));
-                    ct.setTenDichVu(rs.getString(6));
+                    // Quan he doi tuong (Gop y GV P2-2): chi tiet hoa don gan DichVu
+                    entity.DichVu dv = new entity.DichVu(rs.getString(2));
+                    dv.setTenDichVu(rs.getString(6));
+                    ct.setDichVu(dv);
                     ds.add(ct);
                 }
             }

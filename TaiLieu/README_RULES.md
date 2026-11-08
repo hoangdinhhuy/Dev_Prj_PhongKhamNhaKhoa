@@ -209,7 +209,7 @@ int n = pstm.executeUpdate();           // n == 0 → người khác đã đổi
 - `SourceCode/DATA/schema/`: `000_hatang.sql` (CREATE DATABASE `N15_PTUD_DB`, collation, bảng `BoDem`) → `001_phongkham.sql` (Thanh) → `002_nhanvien_taikhoan.sql` (Duy) → `003_dichvu.sql` (Duy) → `004_thuoc.sql` (Thắng) → `005_benhnhan.sql` (Huy) → `006_hosobenhan.sql` (Thắng) → `007_phieukham.sql` (Huy) → `008_hoadon_chitiethoadon.sql` (Huy) → `009_chidinhdichvu.sql` (Thắng) → `010_chitietcapthuoc.sql` (Thắng). `011_banggoiso.sql` (Thanh — chốt ở M0 nếu cần lưu "số đang gọi").
 - `SourceCode/DATA/seed/`: cùng số với schema (`002_seed_nhanvien_taikhoan.sql`…). Seed đủ FK, ≥10 bệnh nhân, ≥3 bác sĩ, ≥8 dịch vụ, dữ liệu trải 2 tuần để demo báo cáo.
 - Chuỗi tiếng Việt trong DB: `nvarchar` (hoặc `varchar` + collation hỗ trợ Unicode — theo file 000); ngày `date`; thời điểm `datetime2(0)`; tiền `decimal(18,2)`; đúng/sai `bit`.
-- Ràng buộc: PK + FK đầy đủ; `CHECK` cho giá > 0, số lượng > 0, STT > 0; `UNIQUE(soDienThoai)` cho `TaiKhoan`… theo đặc tả báo cáo; `UNIQUE(cccd)` cho phép NULL.
+- Ràng buộc: PK + FK đầy đủ; `CHECK` cho giá > 0, số lượng > 0, STT > 0; SĐT bệnh nhân duy nhất qua migration `014_unique_benhnhan_sdt.sql`; `UNIQUE(soDienThoai)` cho `TaiKhoan`; CCCD bệnh nhân được BUS kiểm tra trùng và cho phép NULL.
 - **File schema đã chạy chung chỉ thêm file mới, KHÔNG sửa nội dung cũ** (người khác đã chạy rồi).
 - Cấm commit: backup `.bak`, dữ liệu bệnh nhân thật, mật khẩu thật.
 
@@ -240,6 +240,7 @@ GUI hiển thị đúng chuỗi dưới đây; chuỗi nằm trong `util/MaThong
 | TB15 | `Dịch vụ đã ngừng phục vụ, không thể chỉ định.` | UC004 chỉ định |
 | TB16 | `Bệnh nhân này đã có hồ sơ bệnh án.` | UC004 tạo hồ sơ (1 BN — 1 hồ sơ) |
 | TB17 | `Lượt khám này đã được thanh toán.` | Thanh toán dịch vụ cuối lượt (chống thu 2 lần) |
+| TB20 | `Số điện thoại đã được dùng cho hồ sơ bệnh nhân khác.` | UC002 trùng SĐT khi thêm/cập nhật hồ sơ |
 
 ### 7.2. Thông báo kiểm tra dữ liệu
 
@@ -332,3 +333,37 @@ Mỗi chức năng hoàn thành phải đạt **toàn bộ**:
 
 ---
 *File này là hợp đồng kỹ thuật của nhóm. Khi báo cáo/Word thay đổi → cập nhật ngay file này ở cùng mốc, không để code và tài liệu lệch nhau.*
+
+## Quy tắc entity chuẩn N11 (OOP — đồng bộ với nhóm mẫu)
+
+- Entity **KHÔNG khai báo lại khóa ngoại dạng String** bên cạnh quan hệ đối tượng. Quan hệ là object:
+  `HoaDon.benhNhan/nhanVien/phieuKham`, `PhieuKham.benhNhan/nhanVien/phong/hoaDonPhiKham`,
+  `ChiTietHoaDon.dichVu`, `ChiDinhDichVu.dichVu`, `ChiTietCapThuoc.thuoc`.
+- Mã liên quan đọc qua **delegate getter** (`getMaNhanVien()` → `nhanVien.getMaNhanVien()`); setter nhận mã
+  tạo **object shell** (chỉ mang mã) — API không đổi nên BUS/GUI gọi như cũ.
+- Cột hiển thị (`tenBenhNhan`, `tenBacSi`, `tenPhong`, `tenDichVu`, `tenThuoc`, `donViTinh`) là **getter suy
+  diễn từ object** (`getTenBenhNhan()` → `benhNhan.getHoTen()`), không có field riêng; helper
+  `getXxxString()` theo mẫu `getNhanVienString()` của N11.
+- Kế thừa KHÔNG dùng cho quan hệ has-a (Hóa đơn *có* nhân viên lập — không *là* nhân viên).
+- BUS truyền **đúng object có sẵn** vào quan hệ (`pk.setBenhNhan(benhNhan)`), không qua lại bằng mã.
+- Thuộc tính dẫn xuất (tongTien/thanhTien/tienThua) không có setter — chỉ entity tự tính.
+
+## Quy tắc tài khoản cá nhân (Góp ý GV 05/11 — "mỗi nhân viên dùng mã nhân sự")
+
+- **Tên đăng nhập = chính MÃ NHÂN VIÊN dạng NGẮN** `NV0001`, `NV0002`,... — nhân sự là thực thể
+  tĩnh nên mã không gắn ngày (ngày chỉ nằm trong mã giao dịch `BN/HS/PK/HD` = yyMMddNNNN): `NV0001` (Huy, Lễ tân),
+  `NV0002` (Thắng, Bác sĩ), `NV0003` (Lê Minh Châu, Bác sĩ demo),
+  `NV0005` (Thanh, Phụ tá), `NV0007` (Duy, Quản lý), `NV0004` (Phạm Thu Hà —
+  **BI_KHOA** để test TB02). KHÔNG dùng tên vai trò (`letan`, `bacsi1`...), KHÔNG dùng biệt danh cá nhân.
+- Vai trò (phân quyền) nằm ở `NhanVien.chucVu`, KHÔNG nằm trong tên đăng nhập — đăng nhập xong
+  `SessionContext` mang vai trò, mọi BUS kiểm qua `QuyenUtil`.
+- Lịch sử migration: `016_tai_khoan_ca_nhan.sql` (tách khỏi tên vai trò) → `017_tai_khoan_ma_nv.sql` (`tenDangNhap = maNhanVien`) → `018_ma_nv_ngan.sql` (mã NV
+  ngắn `NV0001`..., đổi cascade 3 FK TaiKhoan/PhieuKham/HoaDon + bộ đếm NV không ngày). Mọi thay đổi username
+  phải qua migration, không sửa tay trong DB.
+
+## Quy tắc khám răng theo FDI (Góp ý GV 05/11 — mục 2/7)
+
+- Dịch vụ thuộc nhóm điều trị răng cụ thể (hàn/trám/trát/nhổ/tủy/mão — `GoiTuKhoa.laDieuTriRang`)
+  BẮT BUỘC chọn số răng trên khung FDI 32 ô trước khi "Thêm chỉ định" → thiếu thì báo `VL19`.
+- Số răng lưu dạng chuỗi "36,37" vào `ChiDinhDichVu.soRang` (migration `014_chidinh_sorang.sql`).
+- Phác đồ + ngày hẹn tái khám lưu vào `PhieuKham.phacDieuTri` / `PhieuKham.ngayHenTiep` (migration `015_phacdo_hen.sql`).

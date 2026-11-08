@@ -6,13 +6,13 @@ description: Chuẩn phát triển ứng dụng Nhóm 15 — Hệ thống quản
 # Nhóm 15 — DentistClinic: chuẩn làm việc bắt buộc
 
 Trước khi code, ĐỌC 2 file hợp lệ của dự án (không hỏi lại):
-1. `TaiLieu/README_RULES.md` — quy tắc đặt tên, kiểu dữ liệu, bảng thông báo TB01–TB16/VL01–VL13, transaction, Git.
-2. `TaiLieu/KICHBAN_THUC_NGHIEM.md` — kịch bản nghiệm thu; mọi thay đổi chức năng phải cập nhật kịch bản tương ứng.
+1. `README_RULES.md` — quy tắc đặt tên, kiểu dữ liệu, bảng thông báo TB01–TB16/VL01–VL13, transaction, Git.
+2. `KICHBAN_THUC_NGHIEM.md` — kịch bản nghiệm thu; mọi thay đổi chức năng phải cập nhật kịch bản tương ứng.
 
 ## Kiến trúc (không đổi vì lý do tiện)
 
 ```
-GUI (gui/GD_X_Controller + gui/GD_X.fxml)
+GUI (gui/GD_X_Controller + resources/fxml/GD_X.fxml)
   → chỉ gọi BUS, không SQL, không gọi DAO
 BUS (bus/X_BUS)  → validate (ValidateUtil) + quyền (QuyenUtil) + transaction + sinh mã (BoDem_DAO)
 DAO (dao/X_DAO)  → PreparedStatement, trả entity/List/boolean, không Alert
@@ -28,21 +28,21 @@ connect/ConnectDB → singleton duy nhất cấp Connection (đọc /db.properti
 - Thông báo: chỉ dùng chuỗi trong `util/MaThongBao.java`; cần message mới → thêm vào catalog trước rồi mới dùng.
 - Cột SQL NULL-able KHÔNG được đặt `UNIQUE` (SQL Server không cho 2 NULL trong unique — đã gây lỗi thật ở `BenhNhan.cccd`, `PhieuKham.maHoaDonPhiKham`); tính duy nhất kiểm ở BUS.
 - Cột computed `PERSISTED`/filtered index cấm dùng (yêu cầu SET option từng phiên — lỗi với JDBC/sqlcmd); dùng cột thường + `CHECK`.
-- SQL mới: thêm file đánh số mới trong `SourceCode/DATA/schema|seed/` (file đã chạy cấm sửa); seed phải idempotent (`IF NOT EXISTS` guard).
+- SQL mới: thêm file đánh số mới trong `DATA/schema|seed/` (file đã chạy cấm sửa); seed phải idempotent (`IF NOT EXISTS` guard).
 
 ## Thêm 1 màn hình (quy trình 6 bước)
 
-1. FXML `src/gui/GD_<ChucNang>.fxml` — controller `gui.GD_<ChucNang>_Controller`, thanh tiêu đề là HBox `styleClass="header"` chứa nút "← Quay lại" (onAction `#quayLai` → gọi `App.quayVeTrangChu()`), KHÔNG ghi mã UC vào text hiển thị.
+1. FXML `resources/fxml/GD_<ChucNang>.fxml` — controller `vn.nhom15.nhakhoa.gui.GD_<ChucNang>_Controller`, thanh tiêu đề là HBox `styleClass="header"` chứa nút "← Quay lại" (onAction `#quayLai` → gọi `App.quayVeTrangChu()`), KHÔNG ghi mã UC vào text hiển thị.
 2. Thêm nút menu trong `GD_Chinh_Controller` (đúng vai trò) — điều hướng là **1 cửa sổ duy nhất**: `GD_Chinh_Controller.moFxml(ten)` nạp FXML vào `khungNoiDung`, cấm mở Stage/window mới cho các màn chức năng.
 3. BUS method: `QuyenUtil.kiemTraQuyen(...)` là dòng đầu tiên; validate trước khi gọi DAO.
 4. DAO: chỉ thêm vào DAO của chủ bảng (quyền sở hữu file trong `docs/tasks/`).
 5. Gắn theme: mọi Scene phải gọi `App.ganTheme(scene)` (scene chính tự gắn qua `App.setRoot`).
-6. Bổ sung test case vào `TaiLieu/KICHBAN_THUC_NGHIEM.md` + (nếu backend) 1 check trong `SourceCode/src/main/TestRunner.java`.
+6. Bổ sung test case vào `KICHBAN_THUC_NGHIEM.md` + (nếu backend) 1 check trong `src/test/java/.../TestRunner.java`.
 
 ## Kiểm thử
 
-- Backend: chạy `main.TestRunner` (headless, DB thật) — phải 33/33 PASS trước khi báo xong bất kỳ thay đổi nào đụng BUS/DAO/SQL.
-- GUI: người thật chạy kịch bản S0–S10 trong `TaiLieu/KICHBAN_THUC_NGHIEM.md`.
+- Backend: chạy `vn.nhom15.nhakhoa.TestRunner` (headless, DB thật) — phải 28/28 PASS trước khi báo xong bất kỳ thay đổi nào đụng BUS/DAO/SQL.
+- GUI: người thật chạy kịch bản S0–S10 trong `KICHBAN_THUC_NGHIEM.md`.
 
 ## UI theme
 

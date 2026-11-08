@@ -38,7 +38,7 @@
 1. Mở **Git Bash**:
    ```bash
    cd /e/Nam4_IUH/PTUD/Project_Nhom15/PTUD_N15_   # hoặc git clone nếu máy mới
-   git pull origin prj15/test    # nhánh chứa code mới (prj15/main chỉ còn tài liệu)
+   git pull origin prj15/main
    ```
 2. Tạo CSDL (dán cả khối, thay mật khẩu sa):
    ```bash

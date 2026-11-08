@@ -46,9 +46,10 @@ public class BoDem_DAO {
         throw new SQLException("Bộ đếm vừa thay đổi khi cấp mã " + loaiMa);
     }
 
-    /** Ma dinh danh cho loaiMa: NV/BN/HS/PK/HD -> <loaiMa>yyMMddNNNN; DV/TH -> <loaiMa>NNNN. */
+    /** Ma dinh danh cho loaiMa: BN/HS/PK/HD -> <loaiMa>yyMMddNNNN (don ghi ngay phat sinh);
+     *  NV/DV/TH -> <loaiMa>NNNN (thuc the/danh muc TINH — ma ngan khong gan ngay, bo dem chung qua cac ngay). */
     public static String layMaMoi(Connection con, String loaiMa, LocalDate ngay) throws SQLException {
-        boolean coNgay = !"DV".equals(loaiMa) && !"TH".equals(loaiMa);
+        boolean coNgay = !"DV".equals(loaiMa) && !"TH".equals(loaiMa) && !"NV".equals(loaiMa);
         // DV/TH không mang ngày trong mã, nên dùng một bộ đếm chung qua mọi ngày.
         int n = tangGiaTri(con, loaiMa, coNgay ? ngay : LocalDate.of(1970, 1, 1));
         if (n > 9999) {

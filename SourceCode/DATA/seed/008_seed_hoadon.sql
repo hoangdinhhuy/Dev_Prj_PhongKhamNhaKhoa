@@ -8,7 +8,7 @@ DECLARE @t varchar(6) = FORMAT(@d, 'yyMMdd');
 IF NOT EXISTS (SELECT 1 FROM HoaDon WHERE maHoaDon = 'HD' + @t + '0001')
 BEGIN
     INSERT INTO HoaDon (maHoaDon, ngayThu, hinhThucThanhToan, daThanhToan, tienKhachDua, maBenhNhan, maNhanVien) VALUES
-    ('HD' + @t + '0001', CAST(GETDATE() AS datetime2(0)), N'TIEN_MAT', 1, 50000.00, 'BN2611010007', 'NV2608010001');
+    ('HD' + @t + '0001', CAST(GETDATE() AS datetime2(0)), N'TIEN_MAT', 1, 50000.00, 'BN2611010007', 'NV0001');
     INSERT INTO ChiTietHoaDon (maHoaDon, maDichVu, soLuong, donGia, thanhTien) VALUES
     ('HD' + @t + '0001', 'DV0001', 1, 50000.00, 50000.00);
 END

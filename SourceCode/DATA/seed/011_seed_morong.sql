@@ -16,7 +16,7 @@ WHILE @i >= 2
 BEGIN
     DECLARE @d date = DATEADD(day, -@i, CAST(GETDATE() AS date));
     DECLARE @t varchar(6) = FORMAT(@d, 'yyMMdd');
-    DECLARE @bs varchar(12) = CASE WHEN @i % 2 = 0 THEN 'NV2608010002' ELSE 'NV2608010003' END;
+    DECLARE @bs varchar(12) = CASE WHEN @i % 2 = 0 THEN 'NV0002' ELSE 'NV0003' END;
     DECLARE @bnma varchar(12) = 'BN26110100' + RIGHT('0' + CAST((1 + (@i % 10)) AS varchar(2)), 2);
 
     IF NOT EXISTS (SELECT 1 FROM PhieuKham WHERE maPhieuKham = 'PK' + @t + '0001')

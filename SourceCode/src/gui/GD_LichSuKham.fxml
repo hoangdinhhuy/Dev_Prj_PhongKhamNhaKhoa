@@ -4,6 +4,7 @@
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -18,8 +19,10 @@
         <VBox spacing="10" styleClass="center-pane">
             <HBox spacing="8" alignment="CENTER_LEFT">
                 <TextField fx:id="txt_tim" prefWidth="320" promptText="Nhập mã BN, tên hoặc SĐT bệnh nhân"/>
+                <DatePicker fx:id="dp_tuNgay" prefWidth="135"/>
+                <DatePicker fx:id="dp_denNgay" prefWidth="135"/>
                 <Button text="Tìm kiếm" onAction="#tim" styleClass="btn-primary" defaultButton="true"/>
-                <Button text="Tất cả" onAction="#tatCa"/>
+                <Button text="Làm mới" onAction="#lamMoi"/>
             </HBox>
             <VBox styleClass="card" spacing="6">
                 <Label text="LỊCH SỬ KHÁM" styleClass="card-title"/>
@@ -27,6 +30,7 @@
                     <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                     <columns>
                         <TableColumn fx:id="cl_ma" text="Mã lượt khám" prefWidth="130"/>
+                        <TableColumn fx:id="cl_lanThu" text="Lần khám" prefWidth="90"/>
                         <TableColumn fx:id="cl_bn" text="Bệnh nhân" prefWidth="200"/>
                         <TableColumn fx:id="cl_ngay" text="Ngày khám" prefWidth="100"/>
                         <TableColumn fx:id="cl_bs" text="Bác sĩ" prefWidth="150"/>

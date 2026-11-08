@@ -1,7 +1,7 @@
 # BỘ TEST CASE — NGUYỄN TUẤN DUY (24726131) — QUẢN LÝ + KHUNG ỨNG DỤNG
 
-> Phạm vi: UC001 Đăng nhập · UC010 Nhân viên/tài khoản · UC007 Dịch vụ · UC008 Báo cáo + CSV · QT-07 hàng hóa/tồn kho.
-> Backend liên quan: `main.TestRunner`.
+> Phạm vi: UC001 Đăng nhập · UC010 Nhân viên/tài khoản · UC007 Dịch vụ · UC008 Báo cáo + CSV · Chế độ sáng/tối · AI dự báo vật tư.
+> Backend liên quan: TestRunner T01–T04, T24–T28, T32, T34 (34/34 PASS).
 
 ## TC-D01 — Đăng nhập & phân quyền (UC001)
 
@@ -43,12 +43,14 @@
 | D04-3 | Xuất CSV → mở bằng Excel | Đúng font tiếng Việt (UTF-8 BOM), đủ cột | | |
 | D04-4 | Đăng nhập `letan` thử mở Báo cáo | Không có trong menu; gọi trực tiếp → `TB08` | | |
 
-## TC-D05 — Phân tích tồn kho bằng AI (QT-07)
+## TC-D05 — Chế độ sáng/tối + AI dự báo vật tư
 
 | Mã | Bước thực hiện | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
-| D05-1 | Đăng nhập `quanly`, mở Quản lý hàng hóa | Hiện tồn kho, ngưỡng tối thiểu và tình trạng hàng | | |
-| D05-2 | Bấm "Phân tích bằng AI" ở MOCK | Có tổng quan/cảnh báo/đề xuất; ghi rõ không có lịch sử nhập xuất | | |
+| D05-1 | Bấm "Chế độ tối" ở sidebar | Toàn bộ nền tối, chữ sáng, nút "Chế độ sáng" | | |
+| D05-2 | Chế độ tối → mở từng chức năng | Mọi màn hiển thị đúng nền tối, không chữ chìm | | |
+| D05-3 | Bấm "Chế độ sáng" | Trở lại giao diện sáng | | |
+| D05-4 | "AI dự báo vật tư" → Chạy dự báo | Bảng vật tư + dự báo 2 tuần + ghi chú nhu cầu | | |
 
 ## Ghi nhận
 

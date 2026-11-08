@@ -20,6 +20,7 @@ Chạy schema trước, seed sau, đúng số thứ tự. File đã chạy chung
 | 12 | — | `011_seed_morong.sql` (mở rộng dữ liệu demo: 20 BN, phiếu 7 ngày, 14 dịch vụ) | cả nhóm |
 | 13 | `012_hoadon_phieukham.sql` (FK HoaDon↔PhieuKham cho thanh toán cuối lượt) | — | Thanh |
 | 14 | `013_hanghoa.sql` (danh mục hàng hóa và tồn kho) | `013_seed_hanghoa.sql` (6 mặt hàng, chạy lại an toàn) | Duy |
+| 15 | `014_unique_benhnhan_sdt.sql` (migration sau seed, yêu cầu SĐT bệnh nhân duy nhất; dừng và liệt kê nếu dữ liệu cũ đang trùng) | — | Huy |
 
 Khi chạy seed bằng `sqlcmd` trên Windows, thêm `-f 65001` để giữ đúng tên hàng tiếng Việt UTF-8.
 
@@ -42,7 +43,7 @@ Database đã được sao lưu trước lần làm mới này tại `backup/N15
 
 | Tên đăng nhập | Vai trò | Ghi chú |
 | --- | --- | --- |
-| `letan` | LE_TAN | chạy màn hình lễ tân (hồ sơ/thu phí/lập phiếu/tra cứu) |
-| `bacsi1`, `bacsi2` | BAC_SI | màn hình khám bệnh |
-| `phuta` | PHU_TA | màn hình hàng chờ |
-| `quanly` | QUAN_LY | nhân viên/dịch vụ/báo cáo |
+| `NV0001` | LE_TAN | chạy màn hình lễ tân (hồ sơ/thu phí/lập phiếu/tra cứu) |
+| `NV0002`, `NV0003` | BAC_SI | màn hình khám bệnh |
+| `NV0005` | PHU_TA | màn hình hàng chờ |
+| `NV0007` | QUAN_LY | nhân viên/dịch vụ/báo cáo |

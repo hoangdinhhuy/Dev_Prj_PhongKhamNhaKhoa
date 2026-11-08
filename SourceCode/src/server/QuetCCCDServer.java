@@ -8,6 +8,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import javafx.scene.image.Image;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -35,11 +36,11 @@ public class QuetCCCDServer {
     /** Dia chi IP mang noi bo cua may tinh (de dien thoai truy cap). */
     public static String ipLan() {
         try {
-            for (Enumeration<NetworkInterface> list = NetworkInterface.getNetworkInterfaces();
-                 list.hasMoreElements(); ) {
-                java.util.Enumeration<java.net.InetAddress> addrs = list.nextElement().getInetAddresses();
+            java.util.Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+            while (nets.hasMoreElements()) {
+                java.util.Enumeration<java.net.InetAddress> addrs = nets.nextElement().getInetAddresses();
                 while (addrs.hasMoreElements()) {
-                    java.net.InetAddress addr = addrs.nextElement();
+                    var addr = addrs.nextElement();
                     if (addr.isSiteLocalAddress()) {
                         return addr.getHostAddress();
                     }

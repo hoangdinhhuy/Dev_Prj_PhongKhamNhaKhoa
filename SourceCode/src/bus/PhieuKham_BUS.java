@@ -1,67 +1,55 @@
 package bus;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
-import connectDB.ConnectDB;
-import dao.BoDem_DAO;
-import dao.HoaDon_DAO;
-import dao.NhanVien_DAO;
+import java.util.ArrayList;
 import dao.PhieuKham_DAO;
-import dao.PhongKham_DAO;
-import entity.BenhNhan;
 import entity.ChucVu;
-import entity.HoaDon;
-import entity.NhanVien;
 import entity.PhieuKham;
-import entity.PhongKham;
 import entity.SessionContext;
-import entity.TrangThaiTaiKhoan;
 import entity.TrangThaiPhieuKham;
-import util.MaThongBao;
 import util.QuyenUtil;
 import util.ValidateUtil;
 
 public class PhieuKham_BUS {
 
     /** UC003 - lap phieu kham: ma PK + STT (BoDem) + INSERT trong 1 transaction, trang thai CHO_KHAM. */
-    public static PhieuKham lapPhieuKham(SessionContext session, BenhNhan benhNhan, String maBacSi,
-                                         String maPhong, String lyDoKham, HoaDon hoaDonPhi) {
+    public static PhieuKham lapPhieuKham(SessionContext session, entity.BenhNhan benhNhan, String maBacSi,
+                                         String maPhong, String lyDoKham, entity.HoaDon hoaDonPhi) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         if (benhNhan == null || benhNhan.getMaBenhNhan() == null) {
-            throw new IllegalArgumentException(MaThongBao.VL05);
+            throw new IllegalArgumentException(util.MaThongBao.VL05);
         }
-        String lyDo = ValidateUtil.khongRong(lyDoKham, MaThongBao.VL08);
+        String lyDo = ValidateUtil.khongRong(lyDoKham, util.MaThongBao.VL08);
         if (maBacSi == null || maBacSi.isBlank() || maPhong == null || maPhong.isBlank()) {
-            throw new IllegalArgumentException(MaThongBao.VL07);
+            throw new IllegalArgumentException(util.MaThongBao.VL07);
         }
 
-        NhanVien bacSi = NhanVien_DAO.layNhanVienTheoMa(maBacSi);
-        PhongKham phong = PhongKham_DAO.layPhongTheoMa(maPhong);
+        entity.NhanVien bacSi = dao.NhanVien_DAO.layNhanVienTheoMa(maBacSi);
+        entity.PhongKham phong = dao.PhongKham_DAO.layPhongTheoMa(maPhong);
         boolean bacSiTrongCa = bacSi != null && bacSi.isConLamViec() && bacSi.getChucVu() == ChucVu.BAC_SI
                 && dao.TaiKhoan_DAO.layTaiKhoanTheoMaNhanVien(maBacSi) != null
                 && dao.TaiKhoan_DAO.layTaiKhoanTheoMaNhanVien(maBacSi)
-                        .getTrangThai() == TrangThaiTaiKhoan.HOAT_DONG;
+                        .getTrangThai() == entity.TrangThaiTaiKhoan.HOAT_DONG;
         if (!bacSiTrongCa || phong == null || !phong.isDangNhanBenh()) {
-            throw new IllegalArgumentException(MaThongBao.TB03);
+            throw new IllegalArgumentException(util.MaThongBao.TB03);
         }
 
         // Hoa don phi phai da thanh toan va CHUA gan phieu nao
-        HoaDon chuaDung = HoaDon_DAO.layHoaDonPhiChuaDungTheoBN(benhNhan.getMaBenhNhan());
+        entity.HoaDon chuaDung = HoaDon_BUS.layHoaDonPhiChuaDung(session, benhNhan.getMaBenhNhan());
         if (hoaDonPhi == null || chuaDung == null
                 || !chuaDung.getMaHoaDon().equals(hoaDonPhi.getMaHoaDon())) {
-            throw new IllegalArgumentException(MaThongBao.TB04);
+            throw new IllegalArgumentException(util.MaThongBao.TB04);
         }
 
         LocalDate ngayKham = LocalDate.now();
-        Connection con = ConnectDB.getInstance().getConnection();
+        java.sql.Connection con = connectDB.ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);
             String maPK;
-            do { maPK = BoDem_DAO.layMaMoi(con, "PK", ngayKham); }
+            do { maPK = dao.BoDem_DAO.layMaMoi(con, "PK", ngayKham); }
             while (PhieuKham_DAO.tonTaiMa(con, maPK));
             int stt;
-            do { stt = BoDem_DAO.laySoThuTuTiepTheo(con, ngayKham, maPhong); }
+            do { stt = dao.BoDem_DAO.laySoThuTuTiepTheo(con, ngayKham, maPhong); }
             while (PhieuKham_DAO.tonTaiSoThuTu(con, ngayKham, maPhong, stt));
             PhieuKham pk = new PhieuKham();
             pk.setMaPhieuKham(maPK);
@@ -69,15 +57,15 @@ public class PhieuKham_BUS {
             pk.setSoThuTu(stt);
             pk.setLyDoKham(lyDo);
             pk.setTrangThai(TrangThaiPhieuKham.CHO_KHAM);
-            pk.setMaBenhNhan(benhNhan.getMaBenhNhan());
-            pk.setMaNhanVien(maBacSi);
-            pk.setMaPhong(maPhong);
-            pk.setMaHoaDonPhiKham(hoaDonPhi.getMaHoaDon());
+            pk.setBenhNhan(benhNhan);        // dung doi tuong co san (P2-1)
+            pk.setNhanVien(bacSi);
+            pk.setPhong(phong);
+            pk.setHoaDonPhiKham(hoaDonPhi);
             PhieuKham_DAO.themPhieuKham(con, pk);
             con.commit();
             con.setAutoCommit(true);
             return PhieuKham_DAO.layPhieuKhamTheoMa(maPK);
-        } catch (SQLException ex) {
+        } catch (java.sql.SQLException ex) {
             rollback(con);
             throw new RuntimeException("Lỗi lập phiếu khám: " + ex.getMessage(), ex);
         }
@@ -89,17 +77,59 @@ public class PhieuKham_BUS {
         return PhieuKham_DAO.layToanBoLichSu();
     }
 
+    /** (Gop y GV 2/5) Lich su kham theo khoang ngay + gioi han — khong tai toan bo. */
+    public static java.util.List<PhieuKham> layLichSuKhoang(SessionContext session, LocalDate tu,
+                                                            LocalDate den, int gioiHan) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI, ChucVu.QUAN_LY, ChucVu.LE_TAN);
+        return PhieuKham_DAO.layLichSuKhoang(tu, den, gioiHan);
+    }
+
+    /** (Gop y GV P1-7) Nhu layLichSuKhoang nhung kem "lan dieu tri thu N" cua tung benh nhan. */
+    public static java.util.List<PhieuKham> layLichSuKhoangLanThu(SessionContext session, LocalDate tu,
+                                                                  LocalDate den, int gioiHan) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI, ChucVu.QUAN_LY, ChucVu.LE_TAN);
+        return PhieuKham_DAO.layLichSuKhoangLanThu(tu, den, gioiHan);
+    }
+
+    /** (Gop y GV P1-7) Chi dinh dich vu (kem so rang FDI) cua mot luot kham — dung cho popup lich su. */
+    public static java.util.List<entity.ChiDinhDichVu> layChiDinhTheoPhieu(SessionContext session,
+                                                                           String maPhieuKham) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI, ChucVu.QUAN_LY, ChucVu.LE_TAN);
+        return PhieuKham_DAO.layPhieuKhamTheoMa(maPhieuKham) == null
+                ? java.util.List.of()
+                : dao.ChiDinhDichVu_DAO.layTheoPhieu(maPhieuKham);
+    }
+
     /** Phieu hoan tat co dich vu phat sinh, chua thanh toan (LE_TAN). */
     public static java.util.List<PhieuKham> layPhieuHoanTatChuaThanhToan(SessionContext session) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         return PhieuKham_DAO.layPhieuHoanTatChuaThanhToan();
     }
 
-    private static void rollback(Connection con) {
+    /** (Báo cáo — UC008) Thống kê lượt khám theo phòng trong khoảng ngày. */
+    public static java.util.List<Object[]> thongKeTheoPhong(SessionContext session, LocalDate tu, LocalDate den) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.QUAN_LY, ChucVu.LE_TAN);
+        return PhieuKham_DAO.thongKeTheoPhong(tu, den);
+    }
+
+    /** (Tối ưu UX lễ tân) Số phiếu đang chờ/đang khám HÔM NAY của bác sĩ — gợi ý bác sĩ ít chờ nhất. */
+    public static int soPhieuDangChoCuaBacSi(SessionContext session, String maBacSi) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.PHU_TA, ChucVu.QUAN_LY, ChucVu.BAC_SI);
+        return PhieuKham_DAO.layDanhSachTheoBacSi(maBacSi, LocalDate.now()).size();
+    }
+
+    /** (Quầy hôm nay — tile SoDoPhong N11) Lượt khám của một phòng trong ngày theo trạng thái. */
+    public static java.util.List<PhieuKham> layDanhSachTheoNgayVaPhong(SessionContext session,
+            LocalDate ngay, String maPhong, TrangThaiPhieuKham trangThai) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.PHU_TA, ChucVu.QUAN_LY, ChucVu.BAC_SI);
+        return PhieuKham_DAO.layDanhSachTheoNgayVaPhong(ngay, maPhong, trangThai);
+    }
+
+    private static void rollback(java.sql.Connection con) {
         try {
             con.rollback();
             con.setAutoCommit(true);
-        } catch (SQLException ignored) { }
+        } catch (java.sql.SQLException ignored) { }
     }
 
     private PhieuKham_BUS() { }

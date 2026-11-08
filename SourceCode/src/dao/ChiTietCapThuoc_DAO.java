@@ -38,8 +38,8 @@ public class ChiTietCapThuoc_DAO {
                 while (rs.next()) {
                     ChiTietCapThuoc ct = new ChiTietCapThuoc(rs.getString(1), rs.getString(2), rs.getInt(3),
                             rs.getString(4));
-                    ct.setTenThuoc(rs.getString(5));
-                    ct.setDonViTinh(rs.getString(6));
+                    entity.Thuoc th = new entity.Thuoc(rs.getString(2), rs.getString(5), rs.getString(6));
+                    ct.setThuoc(th);
                     ds.add(ct);
                 }
             }

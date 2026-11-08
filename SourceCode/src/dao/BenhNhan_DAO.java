@@ -133,5 +133,52 @@ public class BenhNhan_DAO {
         }
     }
 
+
+
+    /** Danh sach rut gon cho GOI Y type-ahead (Gop y GV P2-5: goi y "thuong xuyen/gan day").
+     *  Chi TOP N theo ma giam dan — moi tao cap nhat thi hay doi, phuc vu le tan tiep benh moi. */
+    public static ArrayList<BenhNhan> layBenhNhanMoiNhat(int gioiHan) {
+        String sql = "SELECT " + COLS + " FROM BenhNhan ORDER BY maBenhNhan DESC"
+                + " OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        ArrayList<BenhNhan> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setInt(1, Math.max(1, gioiHan));
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    ds.add(map(rs));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn bệnh nhân", ex);
+        }
+        return ds;
+    }
+
+    /** (Dashboard lễ tân) Bệnh nhân tạo HÔM NAY mà chưa thanh toán phí khám nào còn hiệu lực
+     *  — danh sách việc cần làm "chờ thu phí" của lễ tân. */
+    public static ArrayList<BenhNhan> layChoThuPhiHomNay(String mauMaHomNay) {
+        String sql = "SELECT bn.maBenhNhan, bn.hoTen, bn.soDienThoai, bn.cccd, bn.ngaySinh, bn.diaChi, bn.tienSuDiUng"
+                + " FROM BenhNhan bn"
+                + " WHERE bn.maBenhNhan LIKE ?"
+                + " AND NOT EXISTS (SELECT 1 FROM HoaDon hd"
+                + "   JOIN ChiTietHoaDon ct ON ct.maHoaDon = hd.maHoaDon AND ct.maDichVu = 'DV0001'"
+                + "   WHERE hd.maBenhNhan = bn.maBenhNhan AND hd.daThanhToan = 1 AND hd.maPhieuKham IS NULL)"
+                + " ORDER BY bn.maBenhNhan DESC";
+        ArrayList<BenhNhan> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, mauMaHomNay);
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) {
+                    ds.add(map(rs));
+                }
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn chờ thu phí", ex);
+        }
+        return ds;
+    }
+
     private BenhNhan_DAO() { }
 }

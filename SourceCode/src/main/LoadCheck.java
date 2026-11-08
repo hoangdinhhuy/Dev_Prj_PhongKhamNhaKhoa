@@ -23,12 +23,12 @@ public class LoadCheck {
         AtomicInteger failed = new AtomicInteger();
         Platform.startup(() -> Platform.runLater(() -> {
             try {
-                SessionContext letan = TaiKhoan_BUS.dangNhap("letan", "123456");
-                SessionContext phuta = TaiKhoan_BUS.dangNhap("phuta", "123456");
-                SessionContext bacsi = TaiKhoan_BUS.dangNhap("bacsi1", "123456");
-                SessionContext quanly = TaiKhoan_BUS.dangNhap("quanly", "123456");
+                SessionContext letan = TaiKhoan_BUS.dangNhap("NV0001", "123456");
+                SessionContext phuta = TaiKhoan_BUS.dangNhap("NV0005", "123456");
+                SessionContext bacsi = TaiKhoan_BUS.dangNhap("NV0002", "123456");
+                SessionContext quanly = TaiKhoan_BUS.dangNhap("NV0007", "123456");
                 String[] screens = {"GD_DangNhap", "GD_Chinh", "GD_TongQuan", "GD_QLBenhNhan",
-                        "GD_TraCuuBenhNhan", "GD_ThuPhi", "GD_LapPhieuKham", "GD_ThanhToan",
+                        "GD_TraCuuBenhNhan", "GD_ThuTien", "GD_ChotCa", "GD_LapPhieuKham",
                         "GD_HangCho", "GD_KhamBenh", "GD_LichSuKham", "GD_QLHangHoa",
                         "GD_QLNhanVien", "GD_QLDichVu", "GD_BaoCao"};
                 for (String name : screens) {
@@ -39,7 +39,21 @@ public class LoadCheck {
                         default -> letan;
                     };
                     try {
-                        Parent view = FXMLLoader.load(LoadCheck.class.getResource("/gui/" + name + ".fxml"));
+                        FXMLLoader loader = new FXMLLoader(LoadCheck.class.getResource("/gui/" + name + ".fxml"));
+                        Parent view = loader.load();
+                        if (name.equals("GD_Chinh")) {
+                            Field menuField = loader.getController().getClass().getDeclaredField("vb_menu");
+                            menuField.setAccessible(true);
+                            javafx.scene.layout.VBox menu = (javafx.scene.layout.VBox) menuField.get(loader.getController());
+                            java.util.List<String> actual = menu.getChildren().stream()
+                                    .map(node -> ((Button) node).getText()).toList();
+                            java.util.List<String> expected = java.util.List.of(
+                                    "Tổng quan", "Hồ sơ bệnh nhân", "Tra cứu hồ sơ bệnh nhân",
+                                    "Thu tiền (phí + dịch vụ)", "Lập phiếu khám", "Chốt ca (bàn giao)");
+                            if (!actual.equals(expected)) {
+                                throw new AssertionError("Menu lễ tân sai thứ tự: " + actual);
+                            }
+                        }
                         System.out.println("[PASS] " + name + " -> " + view.getClass().getSimpleName());
                     } catch (Throwable ex) {
                         failed.incrementAndGet();
@@ -47,16 +61,6 @@ public class LoadCheck {
                         while (cause.getCause() != null) cause = cause.getCause();
                         System.out.println("[FAIL] " + name + " -> " + cause);
                     }
-                }
-                try {
-                    App.session = letan;
-                    kiemTraHaiManVuaSua();
-                    System.out.println("[PASS] Phiếu bên phải và phí trống trước khi chọn BN");
-                } catch (Throwable ex) {
-                    failed.incrementAndGet();
-                    Throwable cause = ex;
-                    while (cause.getCause() != null) cause = cause.getCause();
-                    System.out.println("[FAIL] Phiếu/Thu phí -> " + cause);
                 }
             } catch (Throwable ex) {
                 failed.incrementAndGet();
@@ -70,33 +74,4 @@ public class LoadCheck {
         if (failed.get() != 0) System.exit(1);
     }
 
-    private static void kiemTraHaiManVuaSua() throws Exception {
-        FXMLLoader phiLoader = new FXMLLoader(LoadCheck.class.getResource("/gui/GD_LapPhieuKham.fxml"));
-        BorderPane root = phiLoader.load();
-        new Scene(root, 1600, 900);
-        root.resize(1600, 900);
-        PhieuKham phieu = new PhieuKham("PKTEST000001");
-        phieu.setNgayKham(LocalDate.now());
-        phieu.setSoThuTu(1);
-        phieu.setMaPhong("P001");
-        phieu.setMaBenhNhan("BNTEST000001");
-        phieu.setTenBenhNhan("Bệnh nhân kiểm tra");
-        phieu.setTenBacSi("Bác sĩ kiểm tra");
-        phieu.setLyDoKham("Kiểm tra bố cục");
-        Field field = GD_LapPhieuKham_Controller.class.getDeclaredField("phieuVuaLap");
-        field.setAccessible(true);
-        field.set(phiLoader.getController(), phieu);
-        root.applyCss();
-        ((Button) root.lookup("#btn_in")).fire();
-        root.layout();
-        if (root.getRight() == null || root.getRight().getBoundsInParent().getMinX() < 600) {
-            throw new AssertionError("Bản xem trước chưa nằm ở cột phải");
-        }
-        FXMLLoader feeLoader = new FXMLLoader(LoadCheck.class.getResource("/gui/GD_ThuPhi.fxml"));
-        BorderPane feeRoot = feeLoader.load();
-        Label fee = (Label) feeRoot.lookup("#lb_mucPhi");
-        if (fee == null || !fee.getText().contains("chọn bệnh nhân")) {
-            throw new AssertionError("Mức phí đang hiện trước khi chọn bệnh nhân");
-        }
-    }
 }

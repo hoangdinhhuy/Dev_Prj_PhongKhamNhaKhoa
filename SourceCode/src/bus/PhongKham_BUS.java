@@ -14,12 +14,12 @@ public class PhongKham_BUS {
     }
 
     public static ArrayList<PhongKham> danhSachTatCaPhong(SessionContext session) {
-        QuyenUtil.kiemTraQuyen(session, ChucVu.PHU_TA);
+        QuyenUtil.kiemTraQuyen(session, ChucVu.PHU_TA, ChucVu.QUAN_LY, ChucVu.LE_TAN);
         return PhongKham_DAO.getAllPhongKham();
     }
 
     public static void capNhatNhanBenh(SessionContext session, String maPhong, boolean dangNhanBenh) {
-        QuyenUtil.kiemTraQuyen(session, ChucVu.PHU_TA);
+        QuyenUtil.kiemTraQuyen(session, ChucVu.PHU_TA, ChucVu.QUAN_LY);
         PhongKham_DAO.capNhatNhanBenh(maPhong, dangNhanBenh);
     }
 

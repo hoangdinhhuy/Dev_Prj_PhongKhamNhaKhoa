@@ -32,23 +32,30 @@ public class GD_Chinh_Controller {
 
     private final Map<String, Button> nutMap = new HashMap<>();
     private final Map<String, String> iconMap = new HashMap<>();
-    private String fxmlHienTai;
 
     private void doiIcon(String fxml, boolean dangChon) {
         Button b = nutMap.get(fxml);
         if (b == null) {
             return;
         }
-        String f = iconMap.get(fxml);
-        String ten = dangChon ? f.replace(".png", "_w.png") : f;
-        b.setGraphic(new ImageView(new Image("/pic/" + ten, 30, 30, true, true)));
+        String iconFile = iconMap.get(fxml);
+        if (iconFile == null) {
+            return;
+        }
+        String ten = dangChon ? iconFile.replace(".png", "_w.png") : iconFile;
+        java.net.URL url = App.class.getResource("/pic/" + ten);
+        if (url == null) {
+            return;
+        }
+        b.setGraphic(new ImageView(new Image(url.toString(), 30, 30, true, true)));
     }
 
     @FXML
     private void initialize() {
+        App.ganManHinhChinh(this);
         SessionContext s = App.session;
         String ten = s == null ? "" : s.getHoTen();
-        String[] tu = ten.trim().split("\\s+");
+        String[] tu = ten.trim().split("\s+");
         lb_avatar.setText(tu[0].isEmpty() ? "?" :
                 (tu[0].substring(0, 1) + (tu.length > 1 ? tu[tu.length - 1].substring(0, 1) : "")).toUpperCase());
         lb_chipTen.setText(ten);
@@ -56,10 +63,12 @@ public class GD_Chinh_Controller {
         them("Tổng quan", "icon_house.png", "GD_TongQuan", ChucVu.LE_TAN, ChucVu.BAC_SI, ChucVu.PHU_TA, ChucVu.QUAN_LY);
         them("Hồ sơ bệnh nhân", "icon_folder.png", "GD_QLBenhNhan", ChucVu.LE_TAN);
         them("Tra cứu hồ sơ bệnh nhân", "icon_search.png", "GD_TraCuuBenhNhan", ChucVu.LE_TAN);
-        them("Thu lệ phí khám", "icon_dollar.png", "GD_ThuPhi", ChucVu.LE_TAN);
+        them("Thu tiền (phí + dịch vụ)", "icon_dollar.png", "GD_ThuTien", ChucVu.LE_TAN);
         them("Lập phiếu khám", "icon_clipboard.png", "GD_LapPhieuKham", ChucVu.LE_TAN);
-        them("Thanh toán dịch vụ", "icon_receipt.png", "GD_ThanhToan", ChucVu.LE_TAN);
+        them("Chốt ca (bàn giao)", "icon_receipt.png", "GD_ChotCa", ChucVu.LE_TAN);
         them("Hàng chờ theo phòng", "icon_clock.png", "GD_HangCho", ChucVu.PHU_TA);
+        them("Quản lý phòng khám", "icon_house.png", "GD_QuanLyPhong", ChucVu.PHU_TA, ChucVu.QUAN_LY);
+        them("Thống kê hàng chờ", "icon_chart.png", "GD_ThongKeHangCho", ChucVu.PHU_TA, ChucVu.QUAN_LY);
         them("Khám và chẩn đoán", "icon_stethoscope.png", "GD_KhamBenh", ChucVu.BAC_SI);
         them("Lịch sử khám", "icon_history.png", "GD_LichSuKham", ChucVu.BAC_SI);
         them("Quản lý hàng hóa", "icon_folder.png", "GD_QLHangHoa", ChucVu.QUAN_LY);
@@ -69,19 +78,29 @@ public class GD_Chinh_Controller {
         moFxml("GD_TongQuan");
     }
 
+    /** (App.quayVeTrangChu) Ve man Tong quan. */
+    public void moTongQuan() {
+        moFxml("GD_TongQuan");
+    }
+
+    /** Dang xuat: ve man dang nhap. */
+    @FXML
+    private void dangXuat() {
+        App.dangXuat();
+    }
+
     /** Nap FXML vao khung giua + to sang muc menu tuong ung. */
     public void moFxml(String tenFxml) {
         try {
             Node node = FXMLLoader.load(App.class.getResource("/gui/" + tenFxml + ".fxml"));
             khungNoiDung.getChildren().setAll(node);
-            fxmlHienTai = tenFxml;
             nutMap.forEach((k, b) -> {
                 b.getStyleClass().remove("active");
                 doiIcon(k, false);
             });
-            Button nut = nutMap.get(tenFxml);
-            if (nut != null) {
-                nut.getStyleClass().add("active");
+            Button b = nutMap.get(tenFxml);
+            if (b != null) {
+                b.getStyleClass().add("active");
                 doiIcon(tenFxml, true);
             }
         } catch (IOException ex) {
@@ -95,8 +114,10 @@ public class GD_Chinh_Controller {
             if (s != null && cv == s.getChucVu()) {
                 Button b = new Button(tieuDe);
                 b.setWrapText(true);
-                ImageView iv = new ImageView(new Image("/pic/" + iconFile, 200, 200, true, true));
-                b.setGraphic(iv);
+                java.net.URL url = App.class.getResource("/pic/" + iconFile);
+                if (url != null) {
+                    b.setGraphic(new ImageView(new Image(url.toString(), 26, 26, true, true)));
+                }
                 b.getStyleClass().add("menu-btn");
                 b.setMaxWidth(Double.MAX_VALUE);
                 b.setOnAction(e -> moFxml(fxml));
@@ -111,11 +132,5 @@ public class GD_Chinh_Controller {
     @FXML
     private void dongUngDung() {
         App.dongUngDung();
-    }
-
-    @FXML
-    private void dangXuat() {
-        App.session = null;
-        App.setRoot("GD_DangNhap");
     }
 }

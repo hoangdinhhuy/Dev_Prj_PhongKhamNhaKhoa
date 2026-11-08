@@ -2,7 +2,7 @@
 USE N15_PTUD_DB;
 GO
 CREATE TABLE NhanVien (
-    maNhanVien  varchar(12)   NOT NULL PRIMARY KEY,   -- NVyyMMddNNNN
+    maNhanVien  varchar(12)   NOT NULL PRIMARY KEY,   -- NVNNNN (ma nhan su TINH, khong gan ngay)
     hoTen       nvarchar(100) NOT NULL,
     soDienThoai varchar(10)   NULL,
     ngaySinh    date          NULL,

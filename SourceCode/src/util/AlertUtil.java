@@ -1,35 +1,24 @@
 package util;
 
-import java.util.Optional;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
+import javax.swing.JOptionPane;
 
-/** Khuon Alert chung - chi GUI duoc goi. */
+/** Khuôn thông báo chung (Swing) — chỉ GUI được gọi. */
 public final class AlertUtil {
     private AlertUtil() { }
 
     public static void baoLoi(String message) {
-        Alert a = new Alert(Alert.AlertType.ERROR);
-        a.setTitle("Lỗi");
-        a.setHeaderText(null);
-        a.setContentText(message == null || message.isBlank() ? MaThongBao.TB09 : message);
-        a.showAndWait();
+        JOptionPane.showMessageDialog(null,
+                message == null || message.isBlank() ? MaThongBao.TB09 : message,
+                "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
     public static void baoThongTin(String message) {
-        Alert a = new Alert(Alert.AlertType.INFORMATION);
-        a.setTitle("Thành công");
-        a.setHeaderText(null);
-        a.setContentText(message);
-        a.showAndWait();
+        JOptionPane.showMessageDialog(null, message, "Thành công",
+                JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static boolean xacNhan(String message) {
-        Alert a = new Alert(Alert.AlertType.CONFIRMATION);
-        a.setTitle("Xác nhận");
-        a.setHeaderText(null);
-        a.setContentText(message);
-        Optional<ButtonType> kq = a.showAndWait();
-        return kq.isPresent() && kq.get() == ButtonType.OK;
+        return JOptionPane.showConfirmDialog(null, message, "Xác nhận",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.OK_OPTION;
     }
 }

@@ -19,16 +19,20 @@ public class ChiDinhDichVu_DAO {
 
     public static void themChiDinh(Connection con, ChiDinhDichVu cd) throws SQLException {
         try (PreparedStatement pstm = con.prepareStatement(
-                "INSERT INTO ChiDinhDichVu (maPhieuKham, maDichVu) VALUES (?, ?)")) {
+                "INSERT INTO ChiDinhDichVu (maPhieuKham, maDichVu, soRang) VALUES (?, ?, ?)")) {
             pstm.setString(1, cd.getMaPhieuKham());
             pstm.setString(2, cd.getMaDichVu());
+            pstm.setString(3, cd.getSoRang());
             pstm.executeUpdate();
         }
     }
 
     public static ArrayList<ChiDinhDichVu> layTheoPhieu(String maPhieuKham) {
-        String sql = "SELECT cd.maPhieuKham, cd.maDichVu, dv.tenDichVu, dv.donGiaNiemYet"
-                + " FROM ChiDinhDichVu cd JOIN DichVu dv ON dv.maDichVu = cd.maDichVu WHERE cd.maPhieuKham = ?";
+        String sql = "SELECT cd.maPhieuKham, cd.maDichVu, dv.tenDichVu, cd.soRang,"
+                + " CASE WHEN cd.maDichVu = 'DV0001' AND pk.maHoaDonPhiKham IS NOT NULL"
+                + " THEN CAST(0 AS decimal(18,2)) ELSE dv.donGiaNiemYet END AS donGia"
+                + " FROM ChiDinhDichVu cd JOIN DichVu dv ON dv.maDichVu = cd.maDichVu"
+                + " JOIN PhieuKham pk ON pk.maPhieuKham = cd.maPhieuKham WHERE cd.maPhieuKham = ?";
         ArrayList<ChiDinhDichVu> ds = new ArrayList<>();
         Connection con = connectDB.ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql)) {
@@ -36,8 +40,11 @@ public class ChiDinhDichVu_DAO {
             try (ResultSet rs = pstm.executeQuery()) {
                 while (rs.next()) {
                     ChiDinhDichVu cd = new ChiDinhDichVu(rs.getString(1), rs.getString(2));
-                    cd.setTenDichVu(rs.getString(3));
-                    cd.setDonGia(rs.getBigDecimal(4));
+                    entity.DichVu dv = new entity.DichVu(rs.getString(2));
+                    dv.setTenDichVu(rs.getString(3));
+                    cd.setDichVu(dv);
+                    cd.setSoRang(rs.getString(4));
+                    cd.setDonGia(rs.getBigDecimal(5));
                     ds.add(cd);
                 }
             }
@@ -45,17 +52,6 @@ public class ChiDinhDichVu_DAO {
             throw new RuntimeException("Lỗi truy vấn ChiDinhDichVu", ex);
         }
         return ds;
-    }
-
-    /** So dich vu trung binh moi phieu kham (dung cho AI du doan thoi gian cho). */
-    public static double trungBinhSoDichVuMoiPhieu() {
-        String sql = "SELECT AVG(CAST(c AS float)) FROM (SELECT COUNT(*) AS c FROM ChiDinhDichVu GROUP BY maPhieuKham) t";
-        Connection con = connectDB.ConnectDB.getInstance().getConnection();
-        try (PreparedStatement pstm = con.prepareStatement(sql); ResultSet rs = pstm.executeQuery()) {
-            return rs.next() && rs.getObject(1) != null ? rs.getDouble(1) : 0.0;
-        } catch (SQLException ex) {
-            throw new RuntimeException("Lỗi tính trung bình dịch vụ mỗi lượt khám", ex);
-        }
     }
 
     private ChiDinhDichVu_DAO() { }

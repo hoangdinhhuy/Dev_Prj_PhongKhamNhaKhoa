@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -47,16 +48,27 @@
                 <TextField fx:id="txt_ketQua" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
                 <Label text="Thuốc tự mua (ghi chú)" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
                 <TextField fx:id="txt_thuocTuMua" maxWidth="Infinity" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+                <Label text="Ph?c ?? ?i?u tr?" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextArea fx:id="ta_phacDo" prefHeight="64" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+                <Label text="Ng?y h?n ti?p" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="dp_ngayHen" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
             </GridPane>
             <Label text="CHỈ ĐỊNH DỊCH VỤ (bắt buộc ít nhất 1)" style="-fx-font-weight: bold;"/>
             <HBox spacing="8">
+                <TextField fx:id="txt_timDichVu" promptText="T?m d?ch v?"/>
                 <ComboBox fx:id="cbb_dichVu" prefWidth="320"/>
                 <Button fx:id="btn_themChiDinh" text="Thêm chỉ định" onAction="#themChiDinh"/>
                 <Button fx:id="btn_xoaChiDinh" text="Xóa dòng chọn" onAction="#xoaChiDinh"/>
             </HBox>
+            <VBox fx:id="pn_khungRang" spacing="4">
+                <Label text="Ch?n r?ng ?i?u tr?"/>
+                <HBox fx:id="hangTren" spacing="4"/>
+                <HBox fx:id="hangDuoi" spacing="4"/>
+            </VBox>
             <TableView fx:id="table_chiDinh" prefHeight="120">
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 <columns>
+                    <TableColumn fx:id="cl_soRang" text="R?ng" prefWidth="80"/>
                     <TableColumn fx:id="cl_dv" text="Dịch vụ" prefWidth="280"/>
                     <TableColumn fx:id="cl_gia" text="Đơn giá niêm yết" prefWidth="140"/>
                 </columns>

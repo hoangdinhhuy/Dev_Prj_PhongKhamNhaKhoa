@@ -1,39 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.HBox?>
-<BorderPane fx:id="khungLapPhieu" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="gui.GD_LapPhieuKham_Controller" prefWidth="760" prefHeight="480">
-    <top><HBox styleClass="header" alignment="CENTER_LEFT" spacing="14"><Label text="Lập phiếu khám — cấp số thứ tự" styleClass="page-title"/><Region HBox.hgrow="ALWAYS"/></HBox></top>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.GD_LapPhieuKham_Controller" prefWidth="1000" prefHeight="640">
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="header">
+            <Label text="Lập phiếu khám" styleClass="page-title"/>
+            <Label text="Chọn một phòng trống để xem danh sách lượt và bấm Lập phiếu khám. Phòng tắt nhận bệnh do Phụ tá đặt sẽ bị khóa."
+                   styleClass="hint-text"/>
+        </HBox>
+    </top>
     <center>
-        <GridPane hgap="10" vgap="10" styleClass="center-pane">
-            <Label text="Mã BN / SĐT" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_timBN" prefWidth="200" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-            <Button fx:id="btn_tim" text="Tìm" onAction="#tim" GridPane.rowIndex="0" GridPane.columnIndex="2"/>
-            <Label text="Bệnh nhân" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <Label fx:id="lb_bn" text="(chưa chọn)" GridPane.rowIndex="1" GridPane.columnIndex="1"
-                   GridPane.columnSpan="2" style="-fx-font-weight: bold;"/>
-            <Label text="Hóa đơn phí" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <Label fx:id="lb_hoaDon" text="(chưa có - hãy dùng màn hình Thu phí)" wrapText="true"
-                   GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="2"/>
-            <Label text="Bác sĩ" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbb_bacSi" prefWidth="280" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-            <Label text="Phòng khám" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbb_phong" prefWidth="280" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-            <Label text="Lý do khám*" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_lyDoKham" prefWidth="280" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-            <Label text="STT dự kiến" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-            <Label fx:id="lb_sttDuKien" GridPane.rowIndex="6" GridPane.columnIndex="1"
-                   style="-fx-font-weight: bold; -fx-text-fill: #1F618D;"/>
-            <HBox spacing="10" GridPane.rowIndex="7" GridPane.columnIndex="0" GridPane.columnSpan="3">
-                <Button fx:id="btn_lapPhieu" text="Lập phiếu" onAction="#lapPhieu" defaultButton="true"/>
-                <Button fx:id="btn_in" text="In hóa đơn" onAction="#inPhieu" styleClass="print-action-btn"/>
+        <VBox spacing="10">
+            <HBox spacing="10" alignment="CENTER_LEFT" styleClass="center-pane">
+                <ComboBox fx:id="cbb_loc" prefWidth="240"/>
+                <TextField fx:id="txt_timPhong" prefWidth="220" promptText="Nhập mã/tên phòng cần tìm"
+                           onAction="#timPhong"/>
+                <Button text="Tìm phòng" onAction="#timPhong"/>
+                <Button text="Tất cả" onAction="#tatCa"/>
             </HBox>
-        </GridPane>
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" pannable="true" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color: transparent; -fx-background: transparent;">
+                <content>
+                    <FlowPane fx:id="paneTiles" hgap="14" vgap="14"/>
+                </content>
+            </ScrollPane>
+        </VBox>
     </center>
 </BorderPane>
