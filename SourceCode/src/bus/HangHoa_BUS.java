@@ -22,6 +22,34 @@ public final class HangHoa_BUS {
         return HangHoa_DAO.getAllHangHoa();
     }
 
+    /**
+     * Tra cứu theo tiêu chí (chuẩn OOP, lọc trên đối tượng HangHoa):
+     * - tuKhoa: Tên hàng hóa hoặc Mã hàng hóa.
+     * - tinhTrang: "CAN_BO_SUNG", "DU_HANG", "TAT_CA".
+     */
+    public static ArrayList<HangHoa> timKiemHangHoa(SessionContext session, String tuKhoa, String tinhTrang) {
+        ArrayList<HangHoa> tatCa = danhSach(session);
+        ArrayList<HangHoa> ketQua = new ArrayList<>();
+        String tkNorm = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
+
+        for (HangHoa h : tatCa) {
+            if ("CAN_BO_SUNG".equalsIgnoreCase(tinhTrang) && !h.isCanBoSung()) {
+                continue;
+            }
+            if ("DU_HANG".equalsIgnoreCase(tinhTrang) && h.isCanBoSung()) {
+                continue;
+            }
+            if (!tkNorm.isEmpty()) {
+                boolean matchTen = h.getTenHangHoa() != null && h.getTenHangHoa().toLowerCase().contains(tkNorm);
+                boolean matchMa = h.getMaHangHoa() != null && h.getMaHangHoa().toLowerCase().contains(tkNorm);
+                if (!matchTen && !matchMa) {
+                    continue;
+                }
+            }
+            ketQua.add(h);
+        }
+        return ketQua;
+    }
 
     private static HangHoa duLieu(String ma, String ten, String donVi, String soLuong, String mucToiThieu) {
         String tenHopLe = ValidateUtil.khongRong(ten, MaThongBao.VL15);

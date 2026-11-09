@@ -11,6 +11,7 @@ public class NhanVien {
     private String cccd;
     private ChucVu chucVu;
     private boolean conLamViec;
+    private TaiKhoan taiKhoan;     // lien ket doi tuong OOP dung hien thi
 
     public NhanVien() { }
 
@@ -47,7 +48,18 @@ public class NhanVien {
     public boolean isConLamViec() { return conLamViec; }
     public void setConLamViec(boolean conLamViec) { this.conLamViec = conLamViec; }
 
+    public TaiKhoan getTaiKhoan() { return taiKhoan; }
+    public void setTaiKhoan(TaiKhoan taiKhoan) { this.taiKhoan = taiKhoan; }
+
+    // Phương thức dẫn xuất OOP
     public String getGioiTinhString() { return gioiTinh == null ? "" : (gioiTinh ? "Nam" : "Nữ"); }
+    public String getTrangThaiLamViecString() { return conLamViec ? "Đang làm việc" : "Đã nghỉ việc"; }
+    public String getTenDangNhap() { return taiKhoan != null ? taiKhoan.getTenDangNhap() : null; }
+    public String getTrangThaiTaiKhoanString() {
+        if (taiKhoan == null) return "Chưa tạo tài khoản";
+        return taiKhoan.getTrangThai() == TrangThaiTaiKhoan.HOAT_DONG ? "Hoạt động" : "Bị khóa";
+    }
+    public boolean hasTaiKhoan() { return taiKhoan != null; }
 
     @Override
     public boolean equals(Object obj) {

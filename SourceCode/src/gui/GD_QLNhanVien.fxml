@@ -1,62 +1,141 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.layout.Region?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="gui.GD_QLNhanVien_Controller" prefWidth="1080" prefHeight="660">
-    <top><HBox styleClass="header" alignment="CENTER_LEFT" spacing="14"><Label text="Quản lý nhân viên &amp; tài khoản" styleClass="page-title"/><Region HBox.hgrow="ALWAYS"/></HBox></top>
+            fx:controller="gui.GD_QLNhanVien_Controller" prefWidth="1100" prefHeight="680">
+    <top>
+        <VBox spacing="8" styleClass="header">
+            <HBox alignment="CENTER_LEFT" spacing="14">
+                <Label text="Quản lý nhân viên &amp; tài khoản (UC010)" styleClass="page-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lb_thongKeNhanVien" text="Chưa tìm kiếm (Danh sách đang để trống)" styleClass="hint-text"/>
+            </HBox>
+            <!-- Thanh tra cứu theo tiêu chí (ẩn danh sách cho đến khi bấm Tìm kiếm) -->
+            <HBox alignment="CENTER_LEFT" spacing="10" style="-fx-background-color: #F0F4F8; -fx-padding: 8 12; -fx-background-radius: 8;">
+                <Label text="Tra cứu nhân viên:" style="-fx-font-weight: bold; -fx-text-fill: #173A5E;"/>
+                <TextField fx:id="txt_timKiem" promptText="Nhập Tên, SĐT, CCCD, Mã NV..." prefWidth="280"/>
+                <Label text="Chức vụ:"/>
+                <ComboBox fx:id="cbb_locChucVu" prefWidth="130"/>
+                <Label text="Tình trạng:"/>
+                <ComboBox fx:id="cbb_locTrangThai" prefWidth="140"/>
+                <Button fx:id="btn_timKiem" text="Tìm kiếm" onAction="#timKiem" styleClass="btn-primary" defaultButton="true"/>
+            </HBox>
+        </VBox>
+    </top>
+
     <left>
-        <GridPane hgap="8" vgap="8" styleClass="center-pane">
-            <Label text="Họ tên*" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_hoTen" prefWidth="220" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
-            <Label text="SĐT*" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_sdt" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-            <Label text="Ngày sinh" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-            <DatePicker fx:id="dp_ngaySinh" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-            <Label text="Giới tính" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbb_gioiTinh" prefWidth="220" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-            <Label text="CCCD" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_cccd" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
-            <Label text="Chức vụ*" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-            <ComboBox fx:id="cbb_chucVu" prefWidth="220" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
-            <HBox spacing="8" GridPane.rowIndex="6" GridPane.columnIndex="0" GridPane.columnSpan="2">
-                <Button fx:id="btn_them" text="Thêm" onAction="#them" defaultButton="true"/>
-                <Button fx:id="btn_sua" text="Sửa" onAction="#sua"/>
-                <Button fx:id="btn_xoa" text="Xóa" onAction="#xoa"/>
-                <Button fx:id="btn_lamMoi" text="Làm mới" onAction="#lamMoi"/>
-            </HBox>
-            <Label text="TÀI KHOẢN" GridPane.rowIndex="7" GridPane.columnIndex="0"
-                   style="-fx-font-weight: bold;"/>
-            <Label text="Tên đăng nhập" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_tenDangNhap" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
-            <Label text="Mật khẩu" GridPane.rowIndex="9" GridPane.columnIndex="0"/>
-            <TextField fx:id="txt_matKhau" GridPane.rowIndex="9" GridPane.columnIndex="1"/>
-            <HBox spacing="8" GridPane.rowIndex="10" GridPane.columnIndex="0" GridPane.columnSpan="2">
-                <Button fx:id="btn_taoTk" text="Tạo tài khoản (cho dòng chọn)" onAction="#taoTaiKhoan"/>
-                <Button fx:id="btn_khoaMo" text="Khóa/Mở tài khoản" onAction="#khoaMo"/>
-            </HBox>
-        </GridPane>
+        <VBox spacing="10" styleClass="center-pane" prefWidth="360">
+            <Label text="THÔNG TIN NHÂN VIÊN" styleClass="section-title"/>
+            <GridPane hgap="8" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="90" prefWidth="90"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Mã NV" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txt_maNV" editable="false" promptText="(Tự động cấp mã)" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Họ tên*" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <TextField fx:id="txt_hoTen" promptText="Nhập họ và tên" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Số ĐT*" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txt_sdt" promptText="10 chữ số (09...)" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+                <Label text="Ngày sinh" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                <DatePicker fx:id="dp_ngaySinh" promptText="Đủ 18 tuổi" maxWidth="Infinity" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+                <Label text="Giới tính" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbb_gioiTinh" maxWidth="Infinity" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+                <Label text="Số CCCD" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                <TextField fx:id="txt_cccd" promptText="12 chữ số" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+
+                <Label text="Chức vụ*" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbb_chucVu" maxWidth="Infinity" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+                <Label text="Tình trạng" GridPane.rowIndex="7" GridPane.columnIndex="0"/>
+                <ComboBox fx:id="cbb_conLamViec" maxWidth="Infinity" GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <!-- Lưới nút hành động 2x2: giải quyết triệt để lỗi co nút mất chữ -->
+            <GridPane hgap="8" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                <Button fx:id="btn_them" text="Thêm mới" maxWidth="Infinity" onAction="#them" styleClass="btn-success" style="-fx-padding: 9 8;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Button fx:id="btn_sua" text="Cập nhật" maxWidth="Infinity" onAction="#sua" styleClass="btn-primary" style="-fx-padding: 9 8;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                <Button fx:id="btn_xoa" text="Xóa" maxWidth="Infinity" onAction="#xoa" styleClass="btn-danger" style="-fx-padding: 9 8;" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                <Button fx:id="btn_lamMoi" text="Làm mới" maxWidth="Infinity" onAction="#lamMoi" style="-fx-padding: 9 8;" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+            </GridPane>
+
+            <Separator/>
+
+            <Label text="QUẢN LÝ TÀI KHOẢN (CHO NV ĐANG CHỌN)" styleClass="section-title"/>
+            <GridPane hgap="8" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="90" prefWidth="90"/>
+                    <ColumnConstraints hgrow="ALWAYS"/>
+                </columnConstraints>
+
+                <Label text="Tên đăng nhập" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                <TextField fx:id="txt_tenDangNhap" promptText="Thường dùng Mã NV" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                <Label text="Mật khẩu" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                <PasswordField fx:id="txt_matKhau" promptText="Mật khẩu khởi tạo" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                <Label text="Trạng thái TK" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                <TextField fx:id="txt_trangThaiTK" editable="false" promptText="Chưa có tài khoản" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+            </GridPane>
+
+            <GridPane hgap="8" vgap="8">
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50"/>
+                    <ColumnConstraints percentWidth="50"/>
+                </columnConstraints>
+                <Button fx:id="btn_taoTk" text="Tạo tài khoản" maxWidth="Infinity" onAction="#taoTaiKhoan" styleClass="btn-primary" style="-fx-padding: 9 6;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                <Button fx:id="btn_khoaMo" text="Khóa / Mở TK" maxWidth="Infinity" onAction="#khoaMo" style="-fx-padding: 9 6;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+            </GridPane>
+        </VBox>
     </left>
+
     <center>
         <VBox spacing="8" styleClass="center-pane">
-            <TableView fx:id="table_nhanVien" prefHeight="520" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="KẾT QUẢ TRA CỨU NHÂN VIÊN &amp; TÀI KHOẢN" styleClass="section-title"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="* Dữ liệu ban đầu được ẩn. Vui lòng bấm Tìm kiếm để xem danh sách." style="-fx-font-style: italic; -fx-text-fill: #7A8CA3;"/>
+            </HBox>
+
+            <TableView fx:id="table_nhanVien" VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <Label text="Danh sách đang để trống. Vui lòng nhập từ khóa hoặc chọn tiêu chí rồi bấm 'Tìm kiếm'." style="-fx-text-fill: #7A8CA3; -fx-font-style: italic; -fx-font-size: 13.5px;"/>
+                </placeholder>
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 <columns>
-                    <TableColumn fx:id="cl_stt" text="STT" prefWidth="50"/>
-                    <TableColumn fx:id="cl_ma" text="Mã NV" prefWidth="130"/>
-                    <TableColumn fx:id="cl_hoTen" text="Họ tên" prefWidth="160"/>
-                    <TableColumn fx:id="cl_sdt" text="SĐT" prefWidth="105"/>
-                    <TableColumn fx:id="cl_chucVu" text="Chức vụ" prefWidth="90"/>
-                    <TableColumn fx:id="cl_lamViec" text="Còn làm" prefWidth="70"/>
+                    <TableColumn fx:id="cl_stt" text="STT" prefWidth="45"/>
+                    <TableColumn fx:id="cl_ma" text="Mã NV" prefWidth="95"/>
+                    <TableColumn fx:id="cl_hoTen" text="Họ và tên" prefWidth="160"/>
+                    <TableColumn fx:id="cl_sdt" text="Số điện thoại" prefWidth="105"/>
+                    <TableColumn fx:id="cl_gioiTinh" text="Giới tính" prefWidth="70"/>
+                    <TableColumn fx:id="cl_chucVu" text="Chức vụ" prefWidth="95"/>
+                    <TableColumn fx:id="cl_lamViec" text="Công tác" prefWidth="105"/>
+                    <TableColumn fx:id="cl_tenDangNhap" text="Tài khoản" prefWidth="100"/>
+                    <TableColumn fx:id="cl_trangThaiTK" text="Trạng thái TK" prefWidth="110"/>
                 </columns>
             </TableView>
         </VBox>

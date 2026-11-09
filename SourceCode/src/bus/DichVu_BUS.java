@@ -19,7 +19,7 @@ import util.ValidateUtil;
 public class DichVu_BUS {
 
     public static ArrayList<DichVu> danhSachDichVuDangPhucVu(SessionContext session) {
-        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI);
+        QuyenUtil.kiemTraQuyen(session, ChucVu.BAC_SI, ChucVu.QUAN_LY);
         ArrayList<DichVu> ds = new ArrayList<>();
         for (DichVu dv : DichVu_DAO.getAllDichVu()) {
             if (dv.getTrangThai() == TrangThaiDichVu.DANG_PHUC_VU) {
@@ -35,8 +35,34 @@ public class DichVu_BUS {
     }
 
     public static DichVu layDichVuTheoMa(SessionContext session, String maDichVu) {
-        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
         return DichVu_DAO.layDichVuTheoMa(maDichVu);
+    }
+
+    /**
+     * Tra cứu theo tiêu chí (chuẩn OOP, lọc trên đối tượng DichVu):
+     * - tuKhoa: Tên dịch vụ hoặc Mã dịch vụ.
+     * - trangThai: Trạng thái phục vụ (hoặc null nếu xem tất cả).
+     */
+    public static ArrayList<DichVu> timKiemDichVu(SessionContext session, String tuKhoa, TrangThaiDichVu trangThai) {
+        ArrayList<DichVu> tatCa = danhSachDichVu(session);
+        ArrayList<DichVu> ketQua = new ArrayList<>();
+        String tkNorm = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
+
+        for (DichVu d : tatCa) {
+            if (trangThai != null && d.getTrangThai() != trangThai) {
+                continue;
+            }
+            if (!tkNorm.isEmpty()) {
+                boolean matchTen = d.getTenDichVu() != null && d.getTenDichVu().toLowerCase().contains(tkNorm);
+                boolean matchMa = d.getMaDichVu() != null && d.getMaDichVu().toLowerCase().contains(tkNorm);
+                if (!matchTen && !matchMa) {
+                    continue;
+                }
+            }
+            ketQua.add(d);
+        }
+        return ketQua;
     }
 
     public static DichVu themDichVu(SessionContext session, String tenDichVu, String donGia) {

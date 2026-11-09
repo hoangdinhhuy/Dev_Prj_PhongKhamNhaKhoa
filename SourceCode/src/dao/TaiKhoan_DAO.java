@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import connectDB.ConnectDB;
 import entity.TaiKhoan;
 import entity.TrangThaiTaiKhoan;
@@ -67,6 +69,26 @@ public class TaiKhoan_DAO {
             throw new RuntimeException("Lỗi truy vấn TaiKhoan", ex);
         }
         return null;
+    }
+
+    /**
+     * Lay map tai khoan theo ma nhan vien de toi uu hieu nang (tranh truy van N+1).
+     */
+    public static Map<String, TaiKhoan> getMapTaiKhoanTheoMaNV() {
+        String sql = "SELECT tenDangNhap, matKhau, trangThai, maNhanVien FROM TaiKhoan";
+        Connection con = ConnectDB.getInstance().getConnection();
+        Map<String, TaiKhoan> map = new HashMap<>();
+        try (PreparedStatement pstm = con.prepareStatement(sql);
+             ResultSet rs = pstm.executeQuery()) {
+            while (rs.next()) {
+                TaiKhoan tk = new TaiKhoan(rs.getString(1), rs.getString(2),
+                        TrangThaiTaiKhoan.valueOf(rs.getString(3)), rs.getString(4));
+                map.put(tk.getMaNhanVien(), tk);
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn danh sách TaiKhoan", ex);
+        }
+        return map;
     }
 
     private TaiKhoan_DAO() { }

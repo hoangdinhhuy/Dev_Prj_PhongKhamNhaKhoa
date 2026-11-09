@@ -5,7 +5,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import main.App;
@@ -27,7 +26,8 @@ public class GD_DangNhap_Controller {
 
     @FXML
     private void initialize() {
-        txt_taiKhoan.setText("NV0001");
+        // Mac dinh tai khoan Quan ly (NV0007 - Nguyen Tuan Duy)
+        txt_taiKhoan.setText("NV0007");
         txt_matKhau.setText("123456");
     }
 
