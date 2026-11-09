@@ -55,10 +55,10 @@ public class CaThuNgan_BUS {
     }
 
     /** Tính 2 khoản tiền của ca ĐANG MO: doanh thu dịch vụ + phí khám thu hộ (hóa đơn thu từ lúc mở ca). */
-    private static BigDecimal[] tinhTienCa(CaThuNgan ca) {
+    private static BigDecimal[] tinhTienCa(SessionContext session, CaThuNgan ca) {
         BigDecimal ca_tien = BigDecimal.ZERO;
         BigDecimal ho = BigDecimal.ZERO;
-        for (HoaDon hd : HoaDon_BUS.layHoaDonDaThuHomNay(null)) {
+        for (HoaDon hd : HoaDon_BUS.layHoaDonTrongCa(session, ca)) {
             if (hd.getNgayThu() == null || hd.getTongTien() == null) continue;
             if (hd.getNgayThu().isBefore(ca.getThoiGianMo())) continue;   // thuộc ca trước
             if (hd.getMaPhieuKham() != null) ca_tien = ca_tien.add(hd.getTongTien());
@@ -70,13 +70,13 @@ public class CaThuNgan_BUS {
     /** Doanh thu dịch vụ đã thu TRONG ca đang mở (hiển thị trực tiếp cho thu ngân). */
     public static BigDecimal doanhThuTrongCa(SessionContext session, CaThuNgan ca) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
-        return tinhTienCa(ca)[0];
+        return tinhTienCa(session, ca)[0];
     }
 
     /** Phí khám thu hộ TRONG ca đang mở. */
     public static BigDecimal phiThuHoTrongCa(SessionContext session, CaThuNgan ca) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
-        return tinhTienCa(ca)[1];
+        return tinhTienCa(session, ca)[1];
     }
 
     /** CHỐT CA: snapshot doanh thu + thời gian chốt. Sau lệnh này nhân viên sau mới Nhận ca được. */
@@ -85,7 +85,7 @@ public class CaThuNgan_BUS {
         if (ca == null || !ca.isDangMo()) {
             throw new IllegalStateException("Không có ca đang mở để chốt.");
         }
-        BigDecimal[] tien = tinhTienCa(ca);
+        BigDecimal[] tien = tinhTienCa(session, ca);
         Connection con = ConnectDB.getInstance().getConnection();
         try {
             con.setAutoCommit(false);

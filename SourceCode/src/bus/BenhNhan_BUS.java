@@ -6,7 +6,6 @@ import dao.PhongKham_DAO;
 import entity.BenhNhan;
 import entity.ChucVu;
 import entity.SessionContext;
-import util.GoiTuKhoa;
 import util.MaThongBao;
 import util.QuyenUtil;
 import util.ValidateUtil;
@@ -84,15 +83,7 @@ public class BenhNhan_BUS {
                 }
             }
             case "SĐT" -> ds.addAll(dao.BenhNhan_DAO.layBenhNhanTheoSDT(khoa));
-            default -> {
-                // (Góp ý GV 2/6) Tìm đúng từ khóa không dấu: "nguyen van" vẫn ra "Nguyễn Văn"
-                String k = GoiTuKhoa.chuanHoa(khoa);
-                for (BenhNhan bn : dao.BenhNhan_DAO.getAllBenhNhan()) {
-                    if (GoiTuKhoa.chuanHoa(bn.getHoTen()).contains(k)) {
-                        ds.add(bn);
-                    }
-                }
-            }
+            default -> ds.addAll(dao.BenhNhan_DAO.timBenhNhanTheoTen(khoa));
         }
         return ds;
     }
@@ -119,29 +110,12 @@ public class BenhNhan_BUS {
         return dao.BenhNhan_DAO.getAllBenhNhan();
     }
 
-    /** (Góp ý GV P2-5 — gợi ý chọn nhanh) Gợi ý bệnh nhân theo từ khóa: mã BN, SĐT bắt đầu bằng,
-     *  hoặc tên (bỏ dấu). Chỉ quét tối đa 200 hồ sơ gần nhất — không quét toàn bộ. */
+    /** (Góp ý GV P2-5 — gợi ý chọn nhanh) Truy vấn theo từ khóa và giới hạn kết quả ở SQL. */
     public static ArrayList<BenhNhan> goiYBenhNhan(SessionContext session, String tuKhoa, int gioiHan) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.BAC_SI);
         String tu = tuKhoa == null ? "" : tuKhoa.trim();
-        String k = GoiTuKhoa.chuanHoa(tu);
-        ArrayList<BenhNhan> ketQua = new ArrayList<>();
-        if (k.isEmpty()) {
-            return ketQua;
-        }
-        for (BenhNhan bn : dao.BenhNhan_DAO.layBenhNhanMoiNhat(200)) {
-            String sdt = bn.getSoDienThoai() == null ? "" : bn.getSoDienThoai();
-            boolean khop = GoiTuKhoa.chuanHoa(bn.getHoTen()).contains(k)
-                    || sdt.startsWith(tu)
-                    || bn.getMaBenhNhan().equalsIgnoreCase(tu);
-            if (khop) {
-                ketQua.add(bn);
-                if (ketQua.size() >= Math.max(1, gioiHan)) {
-                    break;
-                }
-            }
-        }
-        return ketQua;
+        if (tu.isEmpty()) return new ArrayList<>();
+        return dao.BenhNhan_DAO.goiYBenhNhan(tu, gioiHan);
     }
 
     public static ArrayList<BenhNhan> layBenhNhanTheoSDT(String soDienThoai) {

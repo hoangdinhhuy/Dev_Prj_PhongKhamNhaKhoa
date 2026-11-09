@@ -15,6 +15,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 
 /** Smoke check FXML trên JavaFX thread với đúng vai trò của từng màn. */
 public class LoadCheck {
@@ -49,9 +50,26 @@ public class LoadCheck {
                                     .map(node -> ((Button) node).getText()).toList();
                             java.util.List<String> expected = java.util.List.of(
                                     "Tổng quan", "Hồ sơ bệnh nhân", "Tra cứu hồ sơ bệnh nhân",
-                                    "Thu tiền (phí + dịch vụ)", "Lập phiếu khám", "Chốt ca (bàn giao)");
+                                    "Thu tiền (phí + dịch vụ)", "Lập phiếu khám", "Quản lý ca thu ngân");
                             if (!actual.equals(expected)) {
                                 throw new AssertionError("Menu lễ tân sai thứ tự: " + actual);
+                            }
+                        }
+                        if (name.equals("GD_LapPhieuKham")) {
+                            var controller = loader.getController();
+                            Field tilesField = controller.getClass().getDeclaredField("paneTiles");
+                            tilesField.setAccessible(true);
+                            FlowPane tiles = (FlowPane) tilesField.get(controller);
+                            if (tiles.getChildren().isEmpty()) {
+                                throw new AssertionError("Không có phòng để chọn");
+                            }
+                            var tile = tiles.getChildren().get(0);
+                            tile.getOnMouseClicked().handle(null);
+                            Field selectedField = controller.getClass().getDeclaredField("lb_phongDaChon");
+                            selectedField.setAccessible(true);
+                            Label selected = (Label) selectedField.get(controller);
+                            if (!selected.getText().startsWith(tile.getUserData() + " · ")) {
+                                throw new AssertionError("Bảng chi tiết không theo phòng đã chọn");
                             }
                         }
                         System.out.println("[PASS] " + name + " -> " + view.getClass().getSimpleName());

@@ -10,30 +10,28 @@
             fx:controller="gui.GD_ChotCa_Controller" prefWidth="1020" prefHeight="660">
     <top>
         <HBox styleClass="header" alignment="CENTER_LEFT" spacing="14">
-            <Label text="Chốt ca thu ngân" styleClass="page-title"/>
-            <Label text="Mở ca → thu trong ca → chốt ca (xác nhận bàn giao) → nhân viên sau nhận ca"
-                   styleClass="hint-text"/>
+            <Label text="Quản lý ca thu ngân" styleClass="page-title"/>
         </HBox>
     </top>
     <center>
         <VBox spacing="12" styleClass="center-pane">
             <!-- ===== TRANG THAI CA ===== -->
-            <HBox spacing="14" alignment="CENTER_LEFT" styleClass="card">
-                <VBox spacing="4">
+            <HBox spacing="12" alignment="CENTER_LEFT" styleClass="card">
+                <VBox spacing="7" minWidth="0" HBox.hgrow="ALWAYS" styleClass="shift-info-cell">
                     <Label text="CA HIỆN TẠI" styleClass="stat-label"/>
-                    <Label fx:id="lb_maCa" text="—" styleClass="stat-value"/>
+                    <Label fx:id="lb_maCa" text="—" maxWidth="Infinity" wrapText="true" styleClass="shift-info-value"/>
                 </VBox>
-                <VBox spacing="4">
+                <VBox spacing="7" minWidth="0" HBox.hgrow="ALWAYS" styleClass="shift-info-cell">
                     <Label text="THU NGÂN" styleClass="stat-label"/>
-                    <Label fx:id="lb_thuNgan" text="—" styleClass="stat-value"/>
+                    <Label fx:id="lb_thuNgan" text="—" maxWidth="Infinity" wrapText="true" styleClass="shift-info-value"/>
                 </VBox>
-                <VBox spacing="4">
+                <VBox spacing="7" minWidth="0" HBox.hgrow="ALWAYS" styleClass="shift-info-cell">
                     <Label text="MỞ LÚC" styleClass="stat-label"/>
-                    <Label fx:id="lb_moLuc" text="—" styleClass="stat-value"/>
+                    <Label fx:id="lb_moLuc" text="—" maxWidth="Infinity" wrapText="true" styleClass="shift-info-value"/>
                 </VBox>
-                <VBox spacing="4">
+                <VBox spacing="7" minWidth="0" HBox.hgrow="ALWAYS" styleClass="shift-info-cell">
                     <Label text="TRẠNG THÁI" styleClass="stat-label"/>
-                    <Label fx:id="lb_trangThaiCa" text="—" styleClass="stat-value"/>
+                    <Label fx:id="lb_trangThaiCa" text="—" styleClass="shift-status" wrapText="true"/>
                 </VBox>
             </HBox>
 
@@ -70,7 +68,7 @@
     </center>
     <bottom>
         <VBox spacing="6" styleClass="center-pane">
-            <Label text="LỊCH SỬ CÁ ĐÃ CHỐT" styleClass="card-title"/>
+            <Label text="LỊCH SỬ CA ĐÃ CHỐT" styleClass="card-title"/>
             <TableView fx:id="table_lichSu" prefHeight="160">
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 <columns>
@@ -83,7 +81,6 @@
                     <TableColumn fx:id="cl_lsTT" text="Trạng thái" prefWidth="100"/>
                 </columns>
             </TableView>
-            <Label text="Sau khi chốt ca, thu ngân tiếp theo bấm NHẬN CA để bắt đầu ca mới." styleClass="hint-text"/>
         </VBox>
     </bottom>
 </BorderPane>

@@ -65,7 +65,7 @@ public class GD_Chinh_Controller {
         them("Tra cứu hồ sơ bệnh nhân", "icon_search.png", "GD_TraCuuBenhNhan", ChucVu.LE_TAN);
         them("Thu tiền (phí + dịch vụ)", "icon_dollar.png", "GD_ThuTien", ChucVu.LE_TAN);
         them("Lập phiếu khám", "icon_clipboard.png", "GD_LapPhieuKham", ChucVu.LE_TAN);
-        them("Chốt ca (bàn giao)", "icon_receipt.png", "GD_ChotCa", ChucVu.LE_TAN);
+        them("Quản lý ca thu ngân", "icon_receipt.png", "GD_ChotCa", ChucVu.LE_TAN);
         them("Hàng chờ theo phòng", "icon_clock.png", "GD_HangCho", ChucVu.PHU_TA);
         them("Quản lý phòng khám", "icon_house.png", "GD_QuanLyPhong", ChucVu.PHU_TA, ChucVu.QUAN_LY);
         them("Thống kê hàng chờ", "icon_chart.png", "GD_ThongKeHangCho", ChucVu.PHU_TA, ChucVu.QUAN_LY);

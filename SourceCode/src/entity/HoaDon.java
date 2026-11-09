@@ -3,6 +3,7 @@ package entity;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -25,7 +26,6 @@ public class HoaDon {
 
     // Thuoc tinh dan xuat: chi entity duoc phep tinh lai, ben ngoai chi doc
     private final List<ChiTietHoaDon> chiTiets = new ArrayList<>();
-    private BigDecimal tongTien = BigDecimal.ZERO;
 
     public HoaDon() { }
 
@@ -35,22 +35,21 @@ public class HoaDon {
     public void themChiTiet(ChiTietHoaDon ct) {
         if (ct == null) return;
         chiTiets.add(ct);
-        tinhTongTien();
     }
 
+    /** Chi tiet chi duoc sua qua cac API cua entity; danh sach tra ve chi doc. */
+    public List<ChiTietHoaDon> getChiTiets() { return Collections.unmodifiableList(chiTiets); }
+
     /** Cong thuc dan xuat: tongTien = SUM(thanhTien cua cac chi tiet). */
-    private void tinhTongTien() {
+    public BigDecimal getTongTien() {
         BigDecimal tong = BigDecimal.ZERO;
         for (ChiTietHoaDon ct : chiTiets) {
             if (ct.getThanhTien() != null) {
                 tong = tong.add(ct.getThanhTien());
             }
         }
-        tongTien = tong;
+        return tong;
     }
-
-    public List<ChiTietHoaDon> getChiTiets() { return chiTiets; }
-    public BigDecimal getTongTien() { return tongTien; }
 
     public String getMaHoaDon() { return maHoaDon; }
     public void setMaHoaDon(String maHoaDon) { this.maHoaDon = maHoaDon; }
@@ -93,8 +92,8 @@ public class HoaDon {
 
     /** Thuoc tinh dan xuat: tienThua = tienKhachDua - tongTien (chi doc, khong co setter). */
     public BigDecimal getTienThua() {
-        if (tienKhachDua == null || tongTien == null) return null;
-        return tienKhachDua.subtract(tongTien);
+        if (tienKhachDua == null) return null;
+        return tienKhachDua.subtract(getTongTien());
     }
 
     @Override

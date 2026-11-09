@@ -30,8 +30,6 @@
             </HBox>
             <VBox styleClass="card" spacing="8" VBox.vgrow="ALWAYS">
                 <Label fx:id="lb_chaoMung" styleClass="welcome-title" wrapText="true"/>
-                <Label wrapText="true" styleClass="hint-text"
-                       text="Chọn chức năng ở menu bên trái. Luồng demo: Lễ tân tạo hồ sơ &amp; thu phí → Lập phiếu cấp STT → Phụ tá gọi số &amp; vào khám → Bác sĩ khám &amp; hoàn tất → Quản lý xem báo cáo."/>
                 <Region styleClass="welcome-illustration" prefHeight="400" VBox.vgrow="ALWAYS"/>
             </VBox>
         </VBox>

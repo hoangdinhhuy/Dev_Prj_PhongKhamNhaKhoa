@@ -158,5 +158,27 @@ public class HoaDon_DAO {
         return ds;
     }
 
+    /** Hóa đơn thuộc một ca, kể cả ca kéo dài qua nửa đêm. */
+    public static ArrayList<HoaDon> layHoaDonTrongKhoang(java.time.LocalDateTime tu,
+                                                          java.time.LocalDateTime den) {
+        String sql = "SELECT " + COLS + " FROM HoaDon hd"
+                + " JOIN BenhNhan bn ON bn.maBenhNhan = hd.maBenhNhan"
+                + " LEFT JOIN NhanVien nv ON nv.maNhanVien = hd.maNhanVien"
+                + " WHERE hd.daThanhToan = 1 AND hd.ngayThu >= ? AND hd.ngayThu <= ?"
+                + " ORDER BY hd.ngayThu";
+        ArrayList<HoaDon> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setTimestamp(1, java.sql.Timestamp.valueOf(tu));
+            pstm.setTimestamp(2, java.sql.Timestamp.valueOf(den));
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) ds.add(nap(map(rs)));
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Lỗi truy vấn bảng kê trong ca", ex);
+        }
+        return ds;
+    }
+
     private HoaDon_DAO() { }
 }

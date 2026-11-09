@@ -15,8 +15,6 @@
     <top>
         <HBox spacing="12" alignment="CENTER_LEFT" styleClass="header">
             <Label text="Lập phiếu khám" styleClass="page-title"/>
-            <Label text="Chọn một phòng trống để xem danh sách lượt và bấm Lập phiếu khám. Phòng tắt nhận bệnh do Phụ tá đặt sẽ bị khóa."
-                   styleClass="hint-text"/>
         </HBox>
     </top>
     <center>
@@ -27,13 +25,32 @@
                            onAction="#timPhong"/>
                 <Button text="Tìm phòng" onAction="#timPhong"/>
                 <Button text="Tất cả" onAction="#tatCa"/>
+                <Button text="Làm mới" onAction="#taiLai"/>
             </HBox>
-            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" pannable="true" VBox.vgrow="ALWAYS"
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" pannable="true" prefViewportHeight="170"
                         style="-fx-background-color: transparent; -fx-background: transparent;">
                 <content>
                     <FlowPane fx:id="paneTiles" hgap="14" vgap="14"/>
                 </content>
             </ScrollPane>
+            <VBox spacing="10" styleClass="center-pane" VBox.vgrow="ALWAYS">
+                <HBox spacing="16" alignment="CENTER_LEFT">
+                    <Label fx:id="lb_phongDaChon" text="Chọn phòng" styleClass="card-title"/>
+                    <Label fx:id="lb_nhanSuPhong" text=""/>
+                    <Label fx:id="lb_soLuot" text=""/>
+                </HBox>
+                <TableView fx:id="tableLuot" VBox.vgrow="ALWAYS">
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    <placeholder><Label text="Chưa có lượt khám"/></placeholder>
+                    <columns>
+                        <TableColumn fx:id="cl_stt" text="STT" prefWidth="70"/>
+                        <TableColumn fx:id="cl_benhNhan" text="Bệnh nhân" prefWidth="260"/>
+                        <TableColumn fx:id="cl_trangThai" text="Trạng thái" prefWidth="180"/>
+                    </columns>
+                </TableView>
+                <Button fx:id="btn_lapPhieu" text="Lập phiếu khám tại phòng này" onAction="#moFormPhongDaChon"
+                        disable="true" styleClass="btn-primary"/>
+            </VBox>
         </VBox>
     </center>
 </BorderPane>

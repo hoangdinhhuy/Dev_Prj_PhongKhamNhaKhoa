@@ -26,7 +26,13 @@ public class NhanVien_BUS {
     }
 
     public static ArrayList<NhanVien> danhSachBacSiDangLamViec(SessionContext session) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY, ChucVu.PHU_TA);
         return NhanVien_DAO.layDanhSachBacSiHoatDong();
+    }
+
+    public static NhanVien layNhanVienTheoMa(SessionContext session, String maNhanVien) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY, ChucVu.PHU_TA);
+        return maNhanVien == null ? null : NhanVien_DAO.layNhanVienTheoMa(maNhanVien);
     }
 
     public static NhanVien themNhanVien(SessionContext session, String hoTen, String soDienThoai,

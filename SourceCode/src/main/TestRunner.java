@@ -113,7 +113,9 @@ public class TestRunner {
         check("T09 Thu phi trung -> TB04", expectMessage(() -> HoaDon_BUS.thuPhiKham(ctx[0], bnMoi[0].getMaBenhNhan(), "TIEN_MAT", "100000"), "TB04").equals("Bệnh nhân đã hoàn tất phí khám."), "");
 
         // ---- UC003 Lap phieu ----
-        String phongTest = "P001";
+        String phongTest = PhongKham_DAO.getAllPhongKham().stream()
+                .filter(p -> p.isDangNhanBenh() && ctx[1].getMaNhanVien().equals(p.getMaBacSi()))
+                .map(entity.PhongKham::getMaPhong).findFirst().orElse("P001");
         final PhieuKham[] pk = new PhieuKham[1];
         try {
             pk[0] = PhieuKham_BUS.lapPhieuKham(ctx[0], bnMoi[0], ctx[1].getMaNhanVien(), phongTest, "Test luong kham", hd[0]);
@@ -123,10 +125,16 @@ public class TestRunner {
         } catch (RuntimeException ex) {
             check("T10 Lap phieu", false, ex.getMessage());
         }
-        // T11: chu dong tat P003 truoc khi test, xong bat lai
-        PhongKham_DAO.capNhatNhanBenh("P003", false);
-        check("T11 Phong tat nhan benh (P003) -> TB03", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(ctx[0], bnMoi[0], ctx[1].getMaNhanVien(), "P003", "Test", hd[0]), "TB03").equals("Bác sĩ/Phòng khám hiện không trong ca. Vui lòng chọn khác."), "");
-        PhongKham_DAO.capNhatNhanBenh("P003", true);
+        // T11: khôi phục đúng trạng thái phòng trước khi kiểm thử.
+        boolean p003DangNhan = PhongKham_DAO.layPhongTheoMa("P003").isDangNhanBenh();
+        try {
+            PhongKham_DAO.capNhatNhanBenh("P003", false);
+            check("T11 Phong tat nhan benh (P003) -> TB03", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(ctx[0], bnMoi[0], ctx[1].getMaNhanVien(), "P003", "Test", hd[0]), "TB03").equals("Bác sĩ/Phòng khám hiện không trong ca. Vui lòng chọn khác."), "");
+        } finally {
+            PhongKham_DAO.capNhatNhanBenh("P003", p003DangNhan);
+        }
+        check("T11b Bac si khong dung phong -> TB21", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(
+                ctx[0], bnMoi[0], "NV0003", phongTest, "Test", hd[0]), "TB21").equals(MaThongBao.TB21), "");
         check("T12 Gan hoa don da dung -> TB04", expectMessage(() -> PhieuKham_BUS.lapPhieuKham(ctx[0], bnMoi[0], ctx[1].getMaNhanVien(), phongTest, "Test", hd[0]), "TB04").equals("Bệnh nhân đã hoàn tất phí khám."), "");
 
         // ---- UC009 Hang cho ----
@@ -323,19 +331,22 @@ public class TestRunner {
         // ==== (Chốt ca thu ngân — mẫu POS) T48: nhan ca -> chot ca ====
         try {
             var caMo = CaThuNgan_BUS.layCaDangMo(ctx[0]);
-            if (caMo == null) {
+            if (caMo != null) {
+                check("T48a Ca hien co van dang mo", caMo.isDangMo(), "maCa=" + caMo.getMaCa());
+                System.out.println("[SKIP] T48b/c: ca dang mo cua nguoi dung, khong chot khi kiem thu");
+            } else {
                 caMo = CaThuNgan_BUS.moCa(ctx[0]);
+                check("T48a Nhan ca: ca DANG_MO, gan dung thu ngan",
+                        caMo.isDangMo() && caMo.getMaNhanVien() != null, "maCa=" + caMo.getMaCa());
+                var daChot = CaThuNgan_BUS.chotCa(ctx[3], caMo);
+                check("T48b Chot ca: snapshot doanh thu + trang thai DA_CHOT",
+                        daChot.getThoiGianChot() != null && daChot.getDoanhThuDichVu() != null
+                                && daChot.getPhiThuHo() != null
+                                && entity.CaThuNgan.DA_CHOT.equals(daChot.getTrangThai()),
+                        "DV=" + daChot.getDoanhThuDichVu() + ", ho=" + daChot.getPhiThuHo());
+                check("T48c Sau chot: khong con ca DANG_MO (nhan vien sau phai Nhan ca)",
+                        CaThuNgan_BUS.layCaDangMo(ctx[0]) == null, "");
             }
-            check("T48a Nhan ca: ca DANG_MO, gan dung thu ngan",
-                    caMo.isDangMo() && caMo.getMaNhanVien() != null, "maCa=" + caMo.getMaCa());
-            var daChot = CaThuNgan_BUS.chotCa(ctx[3], caMo);
-            check("T48b Chot ca: snapshot doanh thu + trang thai DA_CHOT",
-                    daChot.getThoiGianChot() != null && daChot.getDoanhThuDichVu() != null
-                            && daChot.getPhiThuHo() != null
-                            && entity.CaThuNgan.DA_CHOT.equals(daChot.getTrangThai()),
-                    "DV=" + daChot.getDoanhThuDichVu() + ", ho=" + daChot.getPhiThuHo());
-            check("T48c Sau chot: khong con ca DANG_MO (nhan vien sau phai Nhan ca)",
-                    CaThuNgan_BUS.layCaDangMo(ctx[0]) == null, "");
         } catch (RuntimeException ex) {
             check("T48 Chot ca thu ngan", false, ex.getMessage());
         }

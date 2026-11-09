@@ -41,7 +41,7 @@
 | 1.1 | Để trống cả hai ô, bấm Đăng nhập | Alert VL13 | | |
 | 1.2 | `NV0001` / mật khẩu sai | Alert TB01, ở lại màn đăng nhập | | |
 | 1.3 | `NV0004` / `123456` | Alert TB02 "Tài khoản của bạn đã bị khóa." | | |
-| 1.4 | `NV0001` / `123456` | Vào GD_Chinh; menu theo thứ tự: Tổng quan, Hồ sơ bệnh nhân, Tra cứu hồ sơ bệnh nhân, Thu tiền, Lập phiếu khám, Chốt ca. Trong Lập phiếu khám, danh sách phòng hiện ngay; chọn phòng trống → bấm Lập phiếu khám tại phòng này | | |
+| 1.4 | `NV0001` / `123456` | Vào GD_Chinh; menu theo thứ tự: Tổng quan, Hồ sơ bệnh nhân, Tra cứu hồ sơ bệnh nhân, Thu tiền, Lập phiếu khám, Quản lý ca thu ngân. Trong Lập phiếu khám, danh sách phòng hiện ngay; chọn phòng trống → bấm Lập phiếu khám tại phòng này | | |
 | 1.5 | Đăng xuất → `NV0002` / `123456` | Menu có: Tổng quan, Khám và chẩn đoán, Lịch sử khám | | |
 | 1.6 | Đăng xuất → `NV0005` / `123456` | Menu có: Tổng quan, Hàng chờ theo phòng | | |
 | 1.7 | Đăng xuất → `NV0007` / `123456` | Menu có: Tổng quan, Quản lý hàng hóa, Quản lý nhân viên, Quản lý dịch vụ, Báo cáo lượt khám; không có Tra cứu hồ sơ bệnh nhân, Hàng chờ theo phòng, Lịch sử khám. Phân tích AI nằm trong màn Quản lý hàng hóa | | |
@@ -61,6 +61,7 @@
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
 | 2.0 | Mở màn Hồ sơ bệnh nhân (chưa bấm gì) → nhập SĐT → Tìm; để trống rồi bấm Tìm; bấm "Hiện tất cả" | Mở màn = **bảng TRỐNG**; Tìm theo SĐT ra đúng bản ghi; để trống → báo gợi ý "Nhập số điện thoại..." và bảng giữ trống; "Hiện tất cả" là thao tác tường minh mới tải toàn bộ (Góp ý GV 2/5 cách 1) | | |
+| 2.0a | Tra cứu theo họ tên không dấu; gõ tên bệnh nhân cũ ở ô gợi ý tiếp nhận/lập phiếu | Tìm đúng hồ sơ theo từ khóa, gợi ý trả về hồ sơ phù hợp dù không nằm trong nhóm bệnh nhân mới nhất | | |
 | 2.1 | Mở QL hồ sơ, bấm Thêm khi bỏ trống họ tên | Alert VL01 | | |
 | 2.2 | Nhập đủ, SĐT `0901111` (7 số) | Alert VL02 | | |
 | 2.3 | SĐT hợp lệ, CCCD `12345678901` (11 số) | Alert VL03 | | |
@@ -99,17 +100,21 @@
 
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |
-| 4.1 | Mở Lập phiếu với BN chưa thu phí | Chỉ báo "(chưa có - hãy dùng màn hình Thu phí)" | | |
-| 4.2 | Lập phiếu chưa chọn bác sĩ/phòng | Alert VL07 | | |
-| 4.3 | Chọn bác sĩ/phòng, lý do để trống | Alert VL08 | | |
-| 4.4 | BN0004 (đã thu phí S3.3) + `NV0002` + `P001` + lý do → Lập phiếu | Thành công: **STT = 4** (sau 3 phiếu seed của P001), mã `PKyyMMdd0005`, "chờ khám" | | |
-| 4.5 | Lập tiếp phiếu thứ 2 cho BN0005 cùng phòng | STT = 5; hai mã khác nhau | | |
-| 4.6 | Chọn phòng P003 (tắt nhận bệnh) → Lập phiếu | Alert TB03 | | |
-| 4.7 | Gọi SP: khóa tài khoản `NV0003` (S8.4), rồi lập phiếu chọn `NV0003` | Alert TB03 | | |
+| 4.1 | Mở Lập phiếu khám, chọn một phòng | Danh sách lượt của phòng hiện bên dưới tile; có bác sĩ và phụ tá được phân công | | |
+| 4.2 | Chọn phòng tắt nhận bệnh hoặc chưa phân công nhân sự | Nút Lập phiếu bị khóa | | |
+| 4.3 | Chọn phòng đang nhận bệnh, để trống lý do rồi lập phiếu | Alert VL08 | | |
+| 4.4 | BN đã thu phí + phòng đang nhận bệnh có bác sĩ, phụ tá phân công + lý do → Lập phiếu | Thành công: STT tiếp theo của phòng, trạng thái CHO_KHAM; bác sĩ trên phiếu đúng phân công | | |
+| 4.5 | Lập tiếp phiếu cho BN khác đã thu phí cùng phòng | STT tăng; hai mã phiếu khác nhau | | |
+| 4.6 | Tắt nhận bệnh ở phòng đang chọn | Nút Lập phiếu bị khóa khi tải lại; BUS trả TB03 nếu gọi trực tiếp | | |
+| 4.7 | Khóa tài khoản bác sĩ hoặc phụ tá được phân công cho phòng, rồi thử lập phiếu | BUS từ chối; không tạo phiếu | | |
 | 4.8 | Nhấn nút **Lập phiếu 2 lần liên tục nhanh** (cùng BN đã dùng phí → lần 2 sẽ chặn) | Lần 1 thành công; lần 2 Alert TB04 — không có phiếu trùng mã/STT | | |
-| 4.9 | Bấm "Xem / in phiếu PDF" | Phiếu tiếp nhận dạng gọn, hẹp; xem trọn trang ở cột bên phải mà không cuộn dọc, không che ô nhập; có đúng mã, STT, tên BN, bác sĩ, lý do và các nút Lưu PDF/In phiếu/Đóng | | |
+| 4.9 | Lập phiếu thành công rồi bấm "Lưu PDF phiếu tiếp nhận" | Phiếu xem trước trong form có mã, STT, tên BN, bác sĩ, lý do; tệp PDF lưu được | | |
+| 4.10 | Gọi BUS lập phiếu P001 với bác sĩ không được phân công cho P001 | Alert TB21; không tạo phiếu hoặc cấp STT | | |
+| 4.11 | Đổi bộ lọc hoặc tìm phòng khác sau khi đã chọn phòng | Bảng chi tiết và nút lập phiếu luôn khớp phòng đang hiển thị | | |
 
-## S4b — Chốt ca thu ngân (màn Lập phiếu khám, cuối ngày)
+## S4b — Quản lý ca thu ngân (cuối ngày)
+
+Ca kéo dài qua nửa đêm vẫn tính đủ hóa đơn từ thời điểm mở đến thời điểm chốt, kể cả hóa đơn do lễ tân khác thu trong cùng ca.
 
 | Bước | Hành động | Kết quả mong đợi | KQ thực tế | Đạt? |
 | --- | --- | --- | --- | --- |

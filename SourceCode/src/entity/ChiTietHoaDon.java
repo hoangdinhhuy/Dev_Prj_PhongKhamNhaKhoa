@@ -21,15 +21,19 @@ public class ChiTietHoaDon {
         this.dichVu = new DichVu(maDichVu);
         this.soLuong = soLuong;
         this.donGia = donGia;
-        this.thanhTien = donGia.multiply(BigDecimal.valueOf(soLuong));
+        tinhThanhTien();
+    }
+
+    private void tinhThanhTien() {
+        this.thanhTien = donGia == null ? null : donGia.multiply(BigDecimal.valueOf(soLuong));
     }
 
     public String getMaHoaDon() { return maHoaDon; }
     public void setMaHoaDon(String maHoaDon) { this.maHoaDon = maHoaDon; }
     public int getSoLuong() { return soLuong; }
-    public void setSoLuong(int soLuong) { this.soLuong = soLuong; }
+    public void setSoLuong(int soLuong) { this.soLuong = soLuong; tinhThanhTien(); }
     public BigDecimal getDonGia() { return donGia; }
-    public void setDonGia(BigDecimal donGia) { this.donGia = donGia; }
+    public void setDonGia(BigDecimal donGia) { this.donGia = donGia; tinhThanhTien(); }
 
     // ---- Quan he DichVu ----
     public DichVu getDichVu() { return dichVu; }

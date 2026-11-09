@@ -1,7 +1,6 @@
 package gui;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
@@ -13,8 +12,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.stage.Modality;
 import javafx.scene.layout.FlowPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import main.App;
@@ -29,13 +28,11 @@ import entity.PhieuKham;
 import entity.PhongKham;
 import entity.TrangThaiPhieuKham;
 import util.AlertUtil;
-import util.FormatUtil;
 
 /**
  * (Mẫu GD_SoDoPhong + GD_DatPhong của N11 — khách sạn chọn phòng trống rồi đặt; bên mình
  * chọn phòng nhận bệnh rồi lập phiếu) Màn lập phiếu của lễ tân:
- * tile phòng tô màu + dialog "Lập phiếu khám tại phòng này" (phòng cố định theo tile,
- * bác sĩ gợi ý ít hàng chờ nhất).
+ * tile phòng và danh sách lượt tại chỗ; form lập phiếu theo phòng đã chọn.
  */
 public class GD_LapPhieuKham_Controller {
 
@@ -43,13 +40,30 @@ public class GD_LapPhieuKham_Controller {
     @FXML private FlowPane paneTiles;
     @FXML private ComboBox<String> cbb_loc;
     @FXML private TextField txt_timPhong;
+    @FXML private Label lb_phongDaChon;
+    @FXML private Label lb_nhanSuPhong;
+    @FXML private Label lb_soLuot;
+    @FXML private TableView<PhieuKham> tableLuot;
+    @FXML private TableColumn<PhieuKham, String> cl_stt;
+    @FXML private TableColumn<PhieuKham, String> cl_benhNhan;
+    @FXML private TableColumn<PhieuKham, String> cl_trangThai;
+    @FXML private Button btn_lapPhieu;
 
     private java.util.List<PhongKham> dsPhong = new java.util.ArrayList<>();
     private LocalDate homNay = LocalDate.now();
     private BenhNhan bnChoLapPhieu;   // bệnh nhân được chuyển tới từ Thu lệ phí (nếu có)
+    private PhongKham phongDaChon;
 
     @FXML
     private void initialize() {
+        cl_stt.setCellValueFactory(cd -> new SimpleStringProperty(
+                String.valueOf(cd.getValue().getSoThuTu())));
+        cl_benhNhan.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getBenhNhanString()));
+        cl_trangThai.setCellValueFactory(cd -> new SimpleStringProperty(switch (cd.getValue().getTrangThai()) {
+            case CHO_KHAM -> "Chờ khám";
+            case DANG_KHAM -> "Đang khám";
+            case HOAN_TAT -> "Hoàn tất";
+        }));
         cbb_loc.getItems().addAll("Tất cả phòng", "Phòng đang khám",
                 "Phòng có hàng chờ", "Phòng trống", "Phòng tắt nhận bệnh");
         cbb_loc.setValue("Tất cả phòng");
@@ -66,8 +80,11 @@ public class GD_LapPhieuKham_Controller {
     @FXML
     private void taiLai() {
         try {
+            homNay = LocalDate.now();
             dsPhong = PhongKham_BUS.danhSachTatCaPhong(App.session);
             String loc = cbb_loc.getValue();
+            String tuKhoa = txt_timPhong.getText() == null ? ""
+                    : txt_timPhong.getText().trim().toLowerCase(java.util.Locale.ROOT);
             paneTiles.getChildren().clear();
             for (PhongKham p : dsPhong) {
                 boolean dangNhan = p.isDangNhanBenh();
@@ -76,7 +93,18 @@ public class GD_LapPhieuKham_Controller {
                         && !phongDungLoc(p, t, loc, dangNhan)) {
                     continue;
                 }
+                String ten = p.getTenPhong() == null ? "" : p.getTenPhong();
+                if (!p.getMaPhong().toLowerCase(java.util.Locale.ROOT).contains(tuKhoa)
+                        && !ten.toLowerCase(java.util.Locale.ROOT).contains(tuKhoa)) {
+                    continue;
+                }
                 paneTiles.getChildren().add(taoTile(p, t, dangNhan));
+            }
+            if (phongDaChon != null) {
+                dsPhong.stream().filter(p -> p.equals(phongDaChon)
+                                && paneTiles.getChildren().stream().anyMatch(node -> p.getMaPhong()
+                                        .equals(node.getUserData()))).findFirst()
+                        .ifPresentOrElse(p -> chonPhong(p, thongTin(p)), this::boChonPhong);
             }
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
@@ -95,20 +123,16 @@ public class GD_LapPhieuKham_Controller {
 
     private ThongTinPhong thongTin(PhongKham p) {
         ThongTinPhong t = new ThongTinPhong();
-        try {
-            var cho = PhieuKham_BUS.layDanhSachTheoNgayVaPhong(App.session, homNay,
+        var cho = PhieuKham_BUS.layDanhSachTheoNgayVaPhong(App.session, homNay,
                     p.getMaPhong(), TrangThaiPhieuKham.CHO_KHAM);
-            var dang = PhieuKham_BUS.layDanhSachTheoNgayVaPhong(App.session, homNay,
+        var dang = PhieuKham_BUS.layDanhSachTheoNgayVaPhong(App.session, homNay,
                     p.getMaPhong(), TrangThaiPhieuKham.DANG_KHAM);
-            t.choKham = cho.size();
-            t.dangKham = dang.size();
-            t.dsLuot = new java.util.ArrayList<>();
-            t.dsLuot.addAll(cho);
-            t.dsLuot.addAll(dang);
-            t.dsLuot.sort(java.util.Comparator.comparingInt(PhieuKham::getSoThuTu));
-        } catch (RuntimeException ex) {
-            AlertUtil.baoLoi(ex.getMessage());
-        }
+        t.choKham = cho.size();
+        t.dangKham = dang.size();
+        t.dsLuot = new java.util.ArrayList<>();
+        t.dsLuot.addAll(cho);
+        t.dsLuot.addAll(dang);
+        t.dsLuot.sort(java.util.Comparator.comparingInt(PhieuKham::getSoThuTu));
         return t;
     }
 
@@ -119,9 +143,10 @@ public class GD_LapPhieuKham_Controller {
 
     private VBox taoTile(PhongKham p, ThongTinPhong t, boolean dangNhan) {
         String tenPhong = p.getTenPhong() == null ? p.getMaPhong() : p.getTenPhong();
+        boolean daPhanCong = p.getMaBacSi() != null && p.getMaPhuTa() != null;
         Color mau;
-        if (!dangNhan) {
-            mau = Color.web("#8a8f98");          // xám — phụ tá đã tắt nhận bệnh nhân
+        if (!dangNhan || !daPhanCong) {
+            mau = Color.web("#8a8f98");          // xám — không tiếp nhận hoặc chưa phân công
         } else if (t.dangKham > 0) {
             mau = Color.web("#e05252");          // đỏ — đang khám
         } else if (t.choKham > 0) {
@@ -132,68 +157,58 @@ public class GD_LapPhieuKham_Controller {
 
         VBox tile = new VBox(6);
         tile.setStyle("-fx-background-color: #" + mau.toString().substring(2, 8)
-                + "; -fx-background-radius: 12; -fx-padding: 14; -fx-cursor: "
-                + (dangNhan ? "hand" : "default") + "; -fx-opacity: "
-                + (dangNhan ? "1.0" : "0.78") + ";");
+                + "; -fx-background-radius: 12; -fx-padding: 14; -fx-cursor: hand; -fx-opacity: "
+                + (dangNhan && daPhanCong ? "1.0" : "0.78") + ";");
         tile.setPrefSize(230, 130);
+        tile.setUserData(p.getMaPhong());
         Label lbPhong = new Label(p.getMaPhong());
         lbPhong.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px;");
         Label lbTen = new Label(tenPhong + (dangNhan ? "" : " — TẮT NHẬN BỆNH NHÂN"));
         lbTen.setStyle("-fx-text-fill: white; -fx-font-size: 12px; -fx-wrap-text: true;");
         Label lbSo = new Label("Chờ " + t.choKham + " · Đang " + t.dangKham);
         lbSo.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
-        Label lbTrangThai = new Label(!dangNhan ? "KHÔNG TIẾP NHẬN" : t.dangKham > 0
+        Label lbTrangThai = new Label(!dangNhan ? "KHÔNG TIẾP NHẬN" : !daPhanCong
+                ? "CHƯA PHÂN CÔNG" : t.dangKham > 0
                 ? "ĐANG KHÁM" : t.choKham > 0 ? "CÓ HÀNG CHỜ" : "TRỐNG — LẬP PHIẾU ĐƯỢC");
         lbTrangThai.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
         tile.getChildren().addAll(lbPhong, lbTen, lbSo, lbTrangThai);
-        if (dangNhan) {
-            tile.setOnMouseClicked(e -> moDialogLapPhieu(p, t, tenPhong));
-        } else {
-            tile.setOnMouseClicked(e -> AlertUtil.baoThongTin("Phòng "
-                    + p.getMaPhong() + " đang tắt nhận bệnh nhân — liên hệ Phụ tá bật lại."));
-        }
+        tile.setOnMouseClicked(e -> chonPhong(p, t));
         return tile;
     }
 
-    /** (N11: click phòng → dialog → hành động) Dialog: lượt hôm nay + nút mở form lập phiếu. */
-    private void moDialogLapPhieu(PhongKham p, ThongTinPhong t, String tenPhong) {
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Phòng " + p.getMaPhong());
-        dialog.setHeaderText("Phòng " + p.getMaPhong() + " · " + tenPhong
-                + " — Chờ " + t.choKham + " · Đang khám " + t.dangKham);
-
-        TableView<PhieuKham> table = new TableView<>();
-        TableColumn<PhieuKham, String> cStt = new TableColumn<>("STT");
-        cStt.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(
-                String.valueOf(cd.getValue().getSoThuTu())));
-        TableColumn<PhieuKham, String> cBn = new TableColumn<>("Bệnh nhân");
-        cBn.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(
-                cd.getValue().getBenhNhanString()));
-        TableColumn<PhieuKham, String> cTt = new TableColumn<>("Trạng thái");
-        cTt.setCellValueFactory(cd -> new javafx.beans.property.SimpleStringProperty(
-                cd.getValue().getTrangThai().toString()));
-        table.getColumns().setAll(cStt, cBn, cTt);
-        table.setItems(FXCollections.observableArrayList(t.dsLuot));
-        table.setPrefSize(520, 220);
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-
-        Button btnLap = new Button("Lập phiếu khám tại phòng này →");
-        btnLap.getStyleClass().add("btn-primary");
-        btnLap.setOnAction(e -> {
-            dialog.close();
-            moFormLapPhieu(p, tenPhong);
-        });
-
-        VBox content = new VBox(10, table, new HBox(10, btnLap));
-        content.setStyle("-fx-padding: 8;");
-        dialog.getDialogPane().setContent(content);
-        dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
-        dialog.showAndWait();
+    private void chonPhong(PhongKham phong, ThongTinPhong thongTin) {
+        phongDaChon = phong;
+        lb_phongDaChon.setText(phong.getMaPhong() + " · " + phong.getTenPhong());
+        lb_soLuot.setText("Chờ " + thongTin.choKham + " · Đang khám " + thongTin.dangKham);
+        tableLuot.setItems(FXCollections.observableArrayList(thongTin.dsLuot));
+        NhanVien bacSi = NhanVien_BUS.layNhanVienTheoMa(App.session, phong.getMaBacSi());
+        NhanVien phuTa = NhanVien_BUS.layNhanVienTheoMa(App.session, phong.getMaPhuTa());
+        lb_nhanSuPhong.setText("Bác sĩ: " + (bacSi == null ? "chưa phân công" : bacSi.getHoTen())
+                + " · Phụ tá: " + (phuTa == null ? "chưa phân công" : phuTa.getHoTen()));
+        btn_lapPhieu.setDisable(!phong.isDangNhanBenh() || bacSi == null || phuTa == null
+                || !bacSi.isConLamViec() || !phuTa.isConLamViec());
     }
 
-    /** (N11 GD_DatPhong) Form lập phiếu: phòng CỐ ĐỊNH theo tile, bác sĩ gợi ý ít chờ nhất. */
+    private void boChonPhong() {
+        phongDaChon = null;
+        lb_phongDaChon.setText("Chọn phòng");
+        lb_nhanSuPhong.setText("");
+        lb_soLuot.setText("");
+        tableLuot.getItems().clear();
+        btn_lapPhieu.setDisable(true);
+    }
+
+    @FXML
+    private void moFormPhongDaChon() {
+        if (phongDaChon != null && !btn_lapPhieu.isDisable()) {
+            moFormLapPhieu(phongDaChon, phongDaChon.getTenPhong());
+        }
+    }
+
+    /** Form lập phiếu dùng bác sĩ đã phân công cho phòng. */
     private void moFormLapPhieu(PhongKham phong, String tenPhong) {
         Dialog<Void> dialog = new Dialog<>();
+        chuanBiDialog(dialog);
         dialog.setTitle("Lập phiếu khám");
         dialog.setHeaderText("Phòng đã chọn: " + phong.getMaPhong() + " · " + tenPhong
                 + "\nBệnh nhân cũ: nhập SĐT / 12 số CCCD / mã BN — khách mới tạo hồ sơ ở màn Hồ sơ bệnh nhân.");
@@ -205,31 +220,10 @@ public class GD_LapPhieuKham_Controller {
         }
         Label lbBN = new Label("(chưa chọn bệnh nhân)");
 
-        ComboBox<NhanVien> cbbBS = new ComboBox<>();
-        var dsBs = NhanVien_BUS.danhSachBacSiDangLamViec(App.session);
-        NhanVien totNhat = null;
-        int itNhat = Integer.MAX_VALUE;
-        for (NhanVien nv : dsBs) {
-            int cho = PhieuKham_BUS.soPhieuDangChoCuaBacSi(App.session, nv.getMaNhanVien());
-            if (cho < itNhat) {
-                itNhat = cho;
-                totNhat = nv;
-            }
-        }
-        final NhanVien bsGoiY = totNhat;
-        final int soChoGoiY = itNhat;
-        cbbBS.setItems(FXCollections.observableArrayList(dsBs));
-        cbbBS.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
-            @Override
-            protected void updateItem(NhanVien nv, boolean empty) {
-                super.updateItem(nv, empty);
-                setText(empty || nv == null ? null : nv.getMaNhanVien() + " - " + nv.getHoTen()
-                        + (nv == bsGoiY ? "  (ít chờ nhất — " + soChoGoiY + " phiếu hôm nay)" : ""));
-            }
-        });
-        cbbBS.setButtonCell(cbbBS.getCellFactory().call(null));
-        cbbBS.setValue(bsGoiY);
-        cbbBS.setMaxWidth(420);
+        NhanVien bacSi = NhanVien_BUS.layNhanVienTheoMa(App.session, phong.getMaBacSi());
+        NhanVien phuTa = NhanVien_BUS.layNhanVienTheoMa(App.session, phong.getMaPhuTa());
+        Label lbNhanSu = new Label("Bác sĩ: " + (bacSi == null ? "chưa phân công" : bacSi.getHoTen())
+                + " · Phụ tá: " + (phuTa == null ? "chưa phân công" : phuTa.getHoTen()));
 
         TextField txtLyDo = new TextField();
         txtLyDo.setPromptText("Lý do khám (vd: Đau răng 36)");
@@ -242,7 +236,6 @@ public class GD_LapPhieuKham_Controller {
         btnLap.getStyleClass().add("btn-primary");
         btnLap.setOnAction(e -> {
             BenhNhan bn = boxBN.getBenhNhanDaChon();
-            NhanVien bs = cbbBS.getValue();
             if (bn == null) {
                 AlertUtil.baoLoi("Chưa chọn bệnh nhân — nhập SĐT/CCCD/mã BN để tìm khách cũ,"
                         + " hoặc tạo hồ sơ mới ở màn Hồ sơ bệnh nhân.");
@@ -251,7 +244,7 @@ public class GD_LapPhieuKham_Controller {
             try {
                 HoaDon hoaDonPhi = HoaDon_BUS.layHoaDonPhiChuaDung(App.session, bn.getMaBenhNhan());
                 PhieuKham phieu = PhieuKham_BUS.lapPhieuKham(App.session, bn,
-                        bs == null ? null : bs.getMaNhanVien(),
+                        phong.getMaBacSi(),
                         phong.getMaPhong(), txtLyDo.getText(), hoaDonPhi);
                 lbKetQua.setText("Đã lập " + phieu.getMaPhieuKham() + " — STT " + phieu.getSoThuTu()
                         + " — phòng " + phieu.getMaPhong());
@@ -265,7 +258,7 @@ public class GD_LapPhieuKham_Controller {
 
         VBox content = new VBox(10,
                 new Label("Bệnh nhân:"), boxBN, lbBN,
-                new Label("Bác sĩ:"), cbbBS,
+                lbNhanSu,
                 new Label("Lý do khám*:"), txtLyDo,
                 btnLap, lbKetQua);
         content.setStyle("-fx-padding: 8;");
@@ -273,6 +266,15 @@ public class GD_LapPhieuKham_Controller {
         dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
         dialog.showAndWait();
         taiLai();
+    }
+
+    private void chuanBiDialog(Dialog<?> dialog) {
+        dialog.initOwner(paneTiles.getScene().getWindow());
+        dialog.initModality(Modality.WINDOW_MODAL);
+        java.net.URL css = App.class.getResource("/gui/ungdung.css");
+        if (css != null) {
+            dialog.getDialogPane().getStylesheets().add(css.toExternalForm());
+        }
     }
 
     private void hienPhieuTrongDialog(Dialog<Void> dialog, PhieuKham phieu, BenhNhan bn) {
@@ -303,31 +305,16 @@ public class GD_LapPhieuKham_Controller {
 
     @FXML
     private void timPhong() {
-        String tu = txt_timPhong.getText() == null ? "" : txt_timPhong.getText().trim().toLowerCase();
-        paneTiles.getChildren().clear();
-        try {
-            if (dsPhong.isEmpty()) {
-                dsPhong = PhongKham_BUS.danhSachTatCaPhong(App.session);
-            }
-            for (PhongKham p : dsPhong) {
-                String ten = (p.getTenPhong() == null ? "" : p.getTenPhong()).toLowerCase();
-                if (tu.isEmpty() || p.getMaPhong().toLowerCase().contains(tu) || ten.contains(tu)) {
-                    ThongTinPhong t = thongTin(p);
-                    paneTiles.getChildren().add(taoTile(p, t, p.isDangNhanBenh()));
-                }
-            }
-            if (paneTiles.getChildren().isEmpty()) {
-                AlertUtil.baoThongTin("Không có phòng khớp từ khóa.");
-            }
-        } catch (RuntimeException ex) {
-            AlertUtil.baoLoi(ex.getMessage());
+        taiLai();
+        if (paneTiles.getChildren().isEmpty()) {
+            AlertUtil.baoThongTin("Không có phòng khớp điều kiện tìm kiếm.");
         }
     }
 
     @FXML
     private void tatCa() {
         txt_timPhong.clear();
-        cbb_loc.setValue("Tất cả phòng");
-        taiLai();
+        if ("Tất cả phòng".equals(cbb_loc.getValue())) taiLai();
+        else cbb_loc.setValue("Tất cả phòng");
     }
 }

@@ -107,6 +107,46 @@ public class BenhNhan_DAO {
         return ds;
     }
 
+    /** Tim ten o SQL (khong nap toan bo ho so len ung dung); khong phan biet dau/tieng hoa. */
+    public static ArrayList<BenhNhan> timBenhNhanTheoTen(String tuKhoa) {
+        String sql = "SELECT " + COLS + " FROM BenhNhan"
+                + " WHERE hoTen COLLATE Latin1_General_CI_AI LIKE ? ORDER BY maBenhNhan DESC";
+        ArrayList<BenhNhan> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, "%" + tuKhoa.trim() + "%");
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) ds.add(map(rs));
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Loi tim benh nhan theo ten", ex);
+        }
+        return ds;
+    }
+
+    /** Goi y theo ma, so dien thoai hoac ten; gioi han ket qua ngay tai SQL. */
+    public static ArrayList<BenhNhan> goiYBenhNhan(String tuKhoa, int gioiHan) {
+        String sql = "SELECT " + COLS + " FROM BenhNhan"
+                + " WHERE maBenhNhan = ? OR soDienThoai LIKE ?"
+                + " OR hoTen COLLATE Latin1_General_CI_AI LIKE ?"
+                + " ORDER BY maBenhNhan DESC OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        ArrayList<BenhNhan> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        String tu = tuKhoa.trim();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, tu);
+            pstm.setString(2, tu + "%");
+            pstm.setString(3, "%" + tu + "%");
+            pstm.setInt(4, Math.max(1, gioiHan));
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) ds.add(map(rs));
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Loi goi y benh nhan", ex);
+        }
+        return ds;
+    }
+
     public static BenhNhan layBenhNhanTheoCCCD(String cccd) {
         String sql = "SELECT " + COLS + " FROM BenhNhan WHERE cccd = ?";
         Connection con = ConnectDB.getInstance().getConnection();

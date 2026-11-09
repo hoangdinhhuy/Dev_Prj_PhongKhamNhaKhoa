@@ -40,7 +40,6 @@
                         <TableColumn fx:id="cl_sdt" text="SĐT" prefWidth="115"/>
                     </columns>
                 </TableView>
-                <Label text="Double-click / chọn dòng để đổ thông tin xuống form bên phải." styleClass="hint-text"/>
             </VBox>
             <VBox spacing="10" styleClass="card" prefWidth="430">
                 <Label text="THÔNG TIN HỒ SƠ" styleClass="card-title"/>

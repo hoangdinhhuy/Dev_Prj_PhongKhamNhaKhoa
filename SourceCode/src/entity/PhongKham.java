@@ -4,6 +4,8 @@ public class PhongKham {
     private String maPhong;
     private String tenPhong;
     private boolean dangNhanBenh;
+    private String maBacSi;
+    private String maPhuTa;
 
     public PhongKham() { }
 
@@ -15,12 +17,23 @@ public class PhongKham {
         this.dangNhanBenh = dangNhanBenh;
     }
 
+    public PhongKham(String maPhong, String tenPhong, boolean dangNhanBenh,
+                     String maBacSi, String maPhuTa) {
+        this(maPhong, tenPhong, dangNhanBenh);
+        this.maBacSi = maBacSi;
+        this.maPhuTa = maPhuTa;
+    }
+
     public String getMaPhong() { return maPhong; }
     public void setMaPhong(String maPhong) { this.maPhong = maPhong; }
     public String getTenPhong() { return tenPhong; }
     public void setTenPhong(String tenPhong) { this.tenPhong = tenPhong; }
     public boolean isDangNhanBenh() { return dangNhanBenh; }
     public void setDangNhanBenh(boolean dangNhanBenh) { this.dangNhanBenh = dangNhanBenh; }
+    public String getMaBacSi() { return maBacSi; }
+    public void setMaBacSi(String maBacSi) { this.maBacSi = maBacSi; }
+    public String getMaPhuTa() { return maPhuTa; }
+    public void setMaPhuTa(String maPhuTa) { this.maPhuTa = maPhuTa; }
 
     @Override
     public boolean equals(Object obj) {

@@ -21,6 +21,7 @@ Chạy schema trước, seed sau, đúng số thứ tự. File đã chạy chung
 | 13 | `012_hoadon_phieukham.sql` (FK HoaDon↔PhieuKham cho thanh toán cuối lượt) | — | Thanh |
 | 14 | `013_hanghoa.sql` (danh mục hàng hóa và tồn kho) | `013_seed_hanghoa.sql` (6 mặt hàng, chạy lại an toàn) | Duy |
 | 15 | `014_unique_benhnhan_sdt.sql` (migration sau seed, yêu cầu SĐT bệnh nhân duy nhất; dừng và liệt kê nếu dữ liệu cũ đang trùng) | — | Huy |
+| 20 | `020_phan_cong_phong.sql` (bổ sung bác sĩ và phụ tá phụ trách phòng) | `015_seed_phan_cong_phong.sql` (2 cặp nhân sự cho 4 phòng, mở tài khoản phụ tá NV0006) | Nhóm 15 |
 
 Khi chạy seed bằng `sqlcmd` trên Windows, thêm `-f 65001` để giữ đúng tên hàng tiếng Việt UTF-8.
 

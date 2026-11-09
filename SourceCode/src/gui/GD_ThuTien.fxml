@@ -18,7 +18,6 @@
     <top>
         <HBox styleClass="header" alignment="CENTER_LEFT" spacing="14">
             <Label text="Thu tiền (lễ tân kiêm thu ngân)" styleClass="page-title"/>
-            <Label text="Phí khám đầu lượt + dịch vụ cuối lượt + bảng kê chốt ca — gộp một nơi" styleClass="hint-text"/>
         </HBox>
     </top>
     <center>

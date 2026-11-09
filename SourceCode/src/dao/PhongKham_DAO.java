@@ -11,7 +11,7 @@ import entity.PhongKham;
 public class PhongKham_DAO {
 
     public static ArrayList<PhongKham> getAllPhongKham() {
-        String sql = "SELECT maPhong, tenPhong, dangNhanBenh FROM PhongKham ORDER BY maPhong";
+        String sql = "SELECT maPhong, tenPhong, dangNhanBenh, maBacSi, maPhuTa FROM PhongKham ORDER BY maPhong";
         ArrayList<PhongKham> ds = new ArrayList<>();
         Connection con = ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql); ResultSet rs = pstm.executeQuery()) {
@@ -25,7 +25,7 @@ public class PhongKham_DAO {
     }
 
     public static ArrayList<PhongKham> layPhongDangNhanBenh() {
-        String sql = "SELECT maPhong, tenPhong, dangNhanBenh FROM PhongKham WHERE dangNhanBenh = 1 ORDER BY maPhong";
+        String sql = "SELECT maPhong, tenPhong, dangNhanBenh, maBacSi, maPhuTa FROM PhongKham WHERE dangNhanBenh = 1 ORDER BY maPhong";
         ArrayList<PhongKham> ds = new ArrayList<>();
         Connection con = ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql); ResultSet rs = pstm.executeQuery()) {
@@ -39,7 +39,7 @@ public class PhongKham_DAO {
     }
 
     public static PhongKham layPhongTheoMa(String maPhong) {
-        String sql = "SELECT maPhong, tenPhong, dangNhanBenh FROM PhongKham WHERE maPhong = ?";
+        String sql = "SELECT maPhong, tenPhong, dangNhanBenh, maBacSi, maPhuTa FROM PhongKham WHERE maPhong = ?";
         Connection con = ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql)) {
             pstm.setString(1, maPhong);
@@ -67,7 +67,8 @@ public class PhongKham_DAO {
     }
 
     private static PhongKham map(ResultSet rs) throws SQLException {
-        return new PhongKham(rs.getString("maPhong"), rs.getString("tenPhong"), rs.getBoolean("dangNhanBenh"));
+        return new PhongKham(rs.getString("maPhong"), rs.getString("tenPhong"), rs.getBoolean("dangNhanBenh"),
+                rs.getString("maBacSi"), rs.getString("maPhuTa"));
     }
 
     private PhongKham_DAO() { }

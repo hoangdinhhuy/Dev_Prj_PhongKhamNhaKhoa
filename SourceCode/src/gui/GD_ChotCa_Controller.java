@@ -90,7 +90,7 @@ public class GD_ChotCa_Controller {
                 lb_maCa.setText("(chưa có)");
                 lb_thuNgan.setText("(chưa có)");
                 lb_moLuc.setText("(chưa có)");
-                lb_trangThaiCa.setText("CHƯA MỞ CA — bấm NHẬN CA để bắt đầu");
+                datTrangThaiCa("CHƯA MỞ CA — bấm NHẬN CA để bắt đầu", false);
                 tableBangKe.getItems().clear();
                 lb_soHD.setText("Số hóa đơn: 0");
                 lb_tongCa.setText("DOANH THU CA (dịch vụ): 0 ₫");
@@ -102,7 +102,7 @@ public class GD_ChotCa_Controller {
                 lb_maCa.setText(caHienTai.getMaCa());
                 lb_thuNgan.setText(caHienTai.getNhanVienString());
                 lb_moLuc.setText(caHienTai.getThoiGianMo().format(DTF));
-                lb_trangThaiCa.setText("ĐANG MỞ");
+                datTrangThaiCa("ĐANG MỞ", true);
                 napBangKeCa();
                 btn_moCa.setDisable(true);
                 btn_chotCa.setDisable(false);
@@ -115,14 +115,16 @@ public class GD_ChotCa_Controller {
         }
     }
 
+    private void datTrangThaiCa(String noiDung, boolean dangMo) {
+        lb_trangThaiCa.setText(noiDung);
+        lb_trangThaiCa.getStyleClass().setAll("shift-status",
+                dangMo ? "shift-status-open" : "shift-status-none");
+    }
+
     /** Bảng kê các hóa đơn thu TỪ LÚC MỞ CA (không gộp lệch với ca trước). */
     private void napBangKeCa() {
         try {
-            var tatCa = HoaDon_BUS.layHoaDonDaThuHomNay(App.session);
-            var trongCa = tatCa.stream()
-                    .filter(hd -> hd.getNgayThu() != null
-                            && !hd.getNgayThu().isBefore(caHienTai.getThoiGianMo()))
-                    .toList();
+            var trongCa = HoaDon_BUS.layHoaDonTrongCa(App.session, caHienTai);
             tableBangKe.setItems(FXCollections.observableArrayList(trongCa));
             BigDecimal ca = BigDecimal.ZERO;
             BigDecimal ho = BigDecimal.ZERO;

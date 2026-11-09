@@ -24,8 +24,6 @@
                 <Button fx:id="btn_tim" text="Tìm" onAction="#tim" defaultButton="true"/>
                 <Button text="Hiện tất cả" onAction="#hienTatCa"/>
             </HBox>
-            <Label text="Bảng trống cho tới khi tìm kiếm — chọn tiêu chí (Mã / SĐT / Họ tên) rồi nhập từ khóa."
-                   styleClass="hint-text"/>
             <TableView fx:id="table_ketQua" prefHeight="430" VBox.vgrow="ALWAYS">
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
                 <columns>
@@ -38,7 +36,6 @@
                     <TableColumn fx:id="cl_tienSu" text="Tiền sử dị ứng" prefWidth="150"/>
                 </columns>
             </TableView>
-            <Label text="Double-click một dòng để xem chi tiết hồ sơ + lịch sử phiếu khám." styleClass="hint-text"/>
         </VBox>
     </center>
 </BorderPane>

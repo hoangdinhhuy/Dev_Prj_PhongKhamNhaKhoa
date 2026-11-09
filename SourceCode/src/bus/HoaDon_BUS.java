@@ -164,6 +164,14 @@ public class HoaDon_BUS {
         return HoaDon_DAO.layHoaDonDaThuHomNay(java.time.LocalDate.now());
     }
 
+    public static java.util.List<HoaDon> layHoaDonTrongCa(SessionContext session,
+                                                           entity.CaThuNgan ca) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY);
+        if (ca == null || ca.getThoiGianMo() == null) return java.util.List.of();
+        return HoaDon_DAO.layHoaDonTrongKhoang(ca.getThoiGianMo(),
+                ca.getThoiGianChot() == null ? LocalDateTime.now() : ca.getThoiGianChot());
+    }
+
     /** (Chốt ca — đúng nghiệp vụ thu ngân) DOANH THU CA = tiền thu ở DỊCH VỤ cuối lượt
      *  (hóa đơn gắn phiếu khám). Phí khám đầu vào là tiền thu hộ, KHÔNG tính vào doanh thu ca. */
     public static java.math.BigDecimal doanhThuCaHomNay(SessionContext session) {

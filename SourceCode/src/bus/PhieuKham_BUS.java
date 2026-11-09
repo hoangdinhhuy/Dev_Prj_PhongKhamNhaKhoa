@@ -26,12 +26,22 @@ public class PhieuKham_BUS {
 
         entity.NhanVien bacSi = dao.NhanVien_DAO.layNhanVienTheoMa(maBacSi);
         entity.PhongKham phong = dao.PhongKham_DAO.layPhongTheoMa(maPhong);
+        entity.TaiKhoan taiKhoanBacSi = dao.TaiKhoan_DAO.layTaiKhoanTheoMaNhanVien(maBacSi);
         boolean bacSiTrongCa = bacSi != null && bacSi.isConLamViec() && bacSi.getChucVu() == ChucVu.BAC_SI
-                && dao.TaiKhoan_DAO.layTaiKhoanTheoMaNhanVien(maBacSi) != null
-                && dao.TaiKhoan_DAO.layTaiKhoanTheoMaNhanVien(maBacSi)
-                        .getTrangThai() == entity.TrangThaiTaiKhoan.HOAT_DONG;
+                && taiKhoanBacSi != null
+                && taiKhoanBacSi.getTrangThai() == entity.TrangThaiTaiKhoan.HOAT_DONG;
+        entity.NhanVien phuTa = phong == null || phong.getMaPhuTa() == null ? null
+                : dao.NhanVien_DAO.layNhanVienTheoMa(phong.getMaPhuTa());
+        entity.TaiKhoan taiKhoanPhuTa = phong == null || phong.getMaPhuTa() == null ? null
+                : dao.TaiKhoan_DAO.layTaiKhoanTheoMaNhanVien(phong.getMaPhuTa());
         if (!bacSiTrongCa || phong == null || !phong.isDangNhanBenh()) {
             throw new IllegalArgumentException(util.MaThongBao.TB03);
+        }
+        if (!maBacSi.equals(phong.getMaBacSi()) || phuTa == null
+                || !phuTa.isConLamViec() || phuTa.getChucVu() != ChucVu.PHU_TA
+                || taiKhoanPhuTa == null
+                || taiKhoanPhuTa.getTrangThai() != entity.TrangThaiTaiKhoan.HOAT_DONG) {
+            throw new IllegalArgumentException(util.MaThongBao.TB21);
         }
 
         // Hoa don phi phai da thanh toan va CHUA gan phieu nao
@@ -108,7 +118,7 @@ public class PhieuKham_BUS {
 
     /** (Báo cáo — UC008) Thống kê lượt khám theo phòng trong khoảng ngày. */
     public static java.util.List<Object[]> thongKeTheoPhong(SessionContext session, LocalDate tu, LocalDate den) {
-        QuyenUtil.kiemTraQuyen(session, ChucVu.QUAN_LY, ChucVu.LE_TAN);
+        QuyenUtil.kiemTraQuyen(session, ChucVu.QUAN_LY);
         return PhieuKham_DAO.thongKeTheoPhong(tu, den);
     }
 

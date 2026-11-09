@@ -25,6 +25,7 @@ public final class MaThongBao {
     public static final String TB18 = "Tên hàng hóa đã tồn tại.";
     public static final String TB19 = "Không tìm thấy hàng hóa cần cập nhật. Vui lòng tải lại danh sách.";
     public static final String TB20 = "Số điện thoại đã tồn tại trong hồ sơ bệnh nhân khác.";
+    public static final String TB21 = "Bác sĩ hoặc phụ tá không đúng phân công của phòng khám.";
 
     // Thong bao kiem tra du lieu
     public static final String VL01 = "Họ tên không được để trống.";
