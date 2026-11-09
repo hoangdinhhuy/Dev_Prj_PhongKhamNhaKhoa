@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Map;
 import connectDB.ConnectDB;
 import dao.BoDem_DAO;
 import dao.NhanVien_DAO;
@@ -22,7 +23,12 @@ public class NhanVien_BUS {
 
     public static ArrayList<NhanVien> danhSachNhanVien(SessionContext session) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.QUAN_LY);
-        return NhanVien_DAO.getAllNhanVien();
+        ArrayList<NhanVien> ds = NhanVien_DAO.getAllNhanVien();
+        Map<String, TaiKhoan> mapTK = TaiKhoan_DAO.getMapTaiKhoanTheoMaNV();
+        for (NhanVien nv : ds) {
+            nv.setTaiKhoan(mapTK.get(nv.getMaNhanVien()));
+        }
+        return ds;
     }
 
     public static ArrayList<NhanVien> danhSachBacSiDangLamViec(SessionContext session) {
@@ -33,6 +39,43 @@ public class NhanVien_BUS {
     public static NhanVien layNhanVienTheoMa(SessionContext session, String maNhanVien) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN, ChucVu.QUAN_LY, ChucVu.PHU_TA);
         return maNhanVien == null ? null : NhanVien_DAO.layNhanVienTheoMa(maNhanVien);
+    }
+
+    /**
+     * Tra cứu theo tiêu chí (chuẩn OOP, lọc trên đối tượng NhanVien):
+     * - tuKhoa: Họ tên, Số điện thoại, CCCD, Mã nhân viên, Tên đăng nhập.
+     * - chucVu: Lọc theo chức vụ (hoặc null nếu xem tất cả).
+     * - conLamViec: Lọc theo tình trạng làm việc (hoặc null nếu xem tất cả).
+     */
+    public static ArrayList<NhanVien> timKiemNhanVien(SessionContext session,
+                                                      String tuKhoa,
+                                                      ChucVu chucVu,
+                                                      Boolean conLamViec) {
+        ArrayList<NhanVien> tatCa = danhSachNhanVien(session);
+        ArrayList<NhanVien> ketQua = new ArrayList<>();
+        String tkNorm = tuKhoa == null ? "" : tuKhoa.trim().toLowerCase();
+
+        for (NhanVien nv : tatCa) {
+            if (conLamViec != null && nv.isConLamViec() != conLamViec) {
+                continue;
+            }
+            if (chucVu != null && nv.getChucVu() != chucVu) {
+                continue;
+            }
+            if (!tkNorm.isEmpty()) {
+                boolean matchTen = nv.getHoTen() != null && nv.getHoTen().toLowerCase().contains(tkNorm);
+                boolean matchSdt = nv.getSoDienThoai() != null && nv.getSoDienThoai().contains(tkNorm);
+                boolean matchMa = nv.getMaNhanVien() != null && nv.getMaNhanVien().toLowerCase().contains(tkNorm);
+                boolean matchCccd = nv.getCccd() != null && nv.getCccd().contains(tkNorm);
+                boolean matchUser = nv.getTenDangNhap() != null && nv.getTenDangNhap().toLowerCase().contains(tkNorm);
+
+                if (!matchTen && !matchSdt && !matchMa && !matchCccd && !matchUser) {
+                    continue;
+                }
+            }
+            ketQua.add(nv);
+        }
+        return ketQua;
     }
 
     public static NhanVien themNhanVien(SessionContext session, String hoTen, String soDienThoai,

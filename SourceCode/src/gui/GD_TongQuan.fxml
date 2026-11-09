@@ -1,36 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="gui.GD_TongQuan_Controller" prefWidth="900">
+            fx:controller="gui.GD_TongQuan_Controller" prefWidth="1080" prefHeight="680">
     <top>
-        <HBox styleClass="header">
-            <Label text="Tổng quan" styleClass="page-title"/>
+        <HBox styleClass="header" alignment="CENTER_LEFT" spacing="14">
+            <VBox spacing="2">
+                <Label text="Bảng điều khiển tổng quan (Dashboard)" styleClass="page-title"/>
+                <Label fx:id="lb_chaoMung" text="Chào mừng đến với hệ thống Quản lý Phòng khám Nha khoa" styleClass="hint-text"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <VBox alignment="CENTER_RIGHT" spacing="2">
+                <Label text="HÔM NAY" style="-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #7A8CA3;"/>
+                <Label fx:id="lb_homNay" style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #173A5E;" text="—"/>
+            </VBox>
         </HBox>
     </top>
+
     <center>
         <VBox styleClass="center-pane" spacing="14">
+            <!-- 4 Thẻ KPI trực quan hóa nhanh số liệu chính -->
             <HBox spacing="14">
-                <VBox styleClass="card" spacing="4" prefWidth="260">
-                    <Label text="HÔM NAY" styleClass="stat-label"/>
-                    <Label fx:id="lb_homNay" styleClass="big-date" text="—"/>
+                <!-- KPI 1: Nhân viên -->
+                <VBox styleClass="card" spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="👥 NHÂN SỰ ĐANG LÀM VIỆC" style="-fx-font-weight: bold; -fx-text-fill: #1D5C8F; -fx-font-size: 12px;"/>
+                    <Label fx:id="lb_kpiNhanVien" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #173A5E;"/>
+                    <Label fx:id="lb_subNhanVien" text="Đang thống kê..." styleClass="hint-text"/>
                 </VBox>
-                <VBox styleClass="card" spacing="4" prefWidth="260">
-                    <Label text="VAI TRÒ" styleClass="stat-label"/>
-                    <Label fx:id="lb_vaiTro" styleClass="big-date" text="—"/>
+
+                <!-- KPI 2: Dịch vụ -->
+                <VBox styleClass="card" spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="🦷 DỊCH VỤ HOẠT ĐỘNG" style="-fx-font-weight: bold; -fx-text-fill: #1E7A46; -fx-font-size: 12px;"/>
+                    <Label fx:id="lb_kpiDichVu" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1E7A46;"/>
+                    <Label text="Đang sẵn sàng phục vụ bệnh nhân" styleClass="hint-text"/>
                 </VBox>
-                <VBox styleClass="card" spacing="4" prefWidth="300" HBox.hgrow="ALWAYS">
-                    <Label text="HỆ THỐNG" styleClass="stat-label"/>
-                    <Label text="DentistClinic" styleClass="stat-value"/>
-                    <Label text="Nha khoa Sài Gòn - Nhóm 15" styleClass="hint-text"/>
+
+                <!-- KPI 3: Cảnh báo hàng hóa -->
+                <VBox styleClass="card" spacing="4" HBox.hgrow="ALWAYS" style="-fx-border-color: #FADBD8; -fx-border-width: 1.5;">
+                    <Label text="⚠️ CẢNH BÁO TỒN KHO" style="-fx-font-weight: bold; -fx-text-fill: #C0392B; -fx-font-size: 12px;"/>
+                    <Label fx:id="lb_kpiHangHoa" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #C0392B;"/>
+                    <Label text="Mặt hàng cần nhập bổ sung gấp" style="-fx-text-fill: #C0392B; -fx-font-size: 12px;"/>
+                </VBox>
+
+                <!-- KPI 4: Lượt khám 7 ngày -->
+                <VBox styleClass="card" spacing="4" HBox.hgrow="ALWAYS">
+                    <Label text="📈 LƯỢT KHÁM 7 NGÀY QUA" style="-fx-font-weight: bold; -fx-text-fill: #7D3C98; -fx-font-size: 12px;"/>
+                    <Label fx:id="lb_kpiLuotKham" text="0" style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #7D3C98;"/>
+                    <Label text="Tổng bệnh nhân tiếp nhận khám" styleClass="hint-text"/>
                 </VBox>
             </HBox>
-            <VBox styleClass="card" spacing="8" VBox.vgrow="ALWAYS">
-                <Label fx:id="lb_chaoMung" styleClass="welcome-title" wrapText="true"/>
-                <Region styleClass="welcome-illustration" prefHeight="400" VBox.vgrow="ALWAYS"/>
+
+            <!-- 2 Biểu đồ trực quan hóa -->
+            <HBox spacing="14" VBox.vgrow="ALWAYS">
+                <!-- Biểu đồ cột: Xu hướng lượt khám 7 ngày -->
+                <VBox styleClass="card" spacing="8" HBox.hgrow="ALWAYS" prefWidth="540">
+                    <Label text="DIỄN BIẾN LƯỢT KHÁM BỆNH NHÂN (7 NGÀY GẦN NHẤT)" styleClass="card-title"/>
+                    <BarChart fx:id="chart_luotKhamTuan" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                        <xAxis><CategoryAxis label="Ngày khám" animated="false"/></xAxis>
+                        <yAxis><NumberAxis label="Số lượt khám" forceZeroInRange="true"/></yAxis>
+                    </BarChart>
+                </VBox>
+
+                <!-- Biểu đồ tròn: Cơ cấu nhân sự theo chức vụ -->
+                <VBox styleClass="card" spacing="8" prefWidth="440">
+                    <Label text="CƠ CẤU NHÂN SỰ THEO VAI TRÒ" styleClass="card-title"/>
+                    <PieChart fx:id="chart_coCauNhanSu" animated="false" legendVisible="true" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </HBox>
+
+            <!-- Bảng cảnh báo nhanh hàng tồn kho nguy cấp -->
+            <VBox styleClass="card" spacing="6" prefHeight="170">
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label text="DANH SÁCH VẬT TƯ &amp; DƯỢC PHẨM CẦN NHẬP BỔ SUNG GẤP" style="-fx-font-weight: bold; -fx-text-fill: #C0392B;"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lb_soMatHangCanNhap" text="0 mặt hàng" styleClass="hint-text"/>
+                </HBox>
+                <TableView fx:id="table_canhBaoTonKho" VBox.vgrow="ALWAYS">
+                    <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>
+                    <columns>
+                        <TableColumn fx:id="cl_cbMa" text="Mã hàng" prefWidth="100"/>
+                        <TableColumn fx:id="cl_cbTen" text="Tên hàng hóa" prefWidth="280"/>
+                        <TableColumn fx:id="cl_cbDonVi" text="Đơn vị tính" prefWidth="110"/>
+                        <TableColumn fx:id="cl_cbTon" text="Tồn hiện tại" prefWidth="110"/>
+                        <TableColumn fx:id="cl_cbToiThieu" text="Mức tối thiểu" prefWidth="110"/>
+                        <TableColumn fx:id="cl_cbThieu" text="Thiếu hụt" prefWidth="110"/>
+                    </columns>
+                </TableView>
             </VBox>
         </VBox>
     </center>

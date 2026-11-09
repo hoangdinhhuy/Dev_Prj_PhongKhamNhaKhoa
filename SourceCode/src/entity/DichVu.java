@@ -1,6 +1,7 @@
 package entity;
 
 import java.math.BigDecimal;
+import util.FormatUtil;
 
 public class DichVu {
     private String maDichVu;
@@ -9,9 +10,7 @@ public class DichVu {
     private TrangThaiDichVu trangThai;
 
     public DichVu() { }
-
     public DichVu(String maDichVu) { this.maDichVu = maDichVu; }
-
     public DichVu(String maDichVu, String tenDichVu, BigDecimal donGiaNiemYet, TrangThaiDichVu trangThai) {
         this.maDichVu = maDichVu;
         this.tenDichVu = tenDichVu;
@@ -27,6 +26,19 @@ public class DichVu {
     public void setDonGiaNiemYet(BigDecimal donGiaNiemYet) { this.donGiaNiemYet = donGiaNiemYet; }
     public TrangThaiDichVu getTrangThai() { return trangThai; }
     public void setTrangThai(TrangThaiDichVu trangThai) { this.trangThai = trangThai; }
+
+    // Phương thức dẫn xuất OOP
+    public String getDonGiaDinhDang() {
+        return FormatUtil.tien(donGiaNiemYet);
+    }
+
+    public String getTrangThaiString() {
+        return trangThai == null ? "" : trangThai.toString();
+    }
+
+    public boolean isDangPhucVu() {
+        return trangThai == TrangThaiDichVu.DANG_PHUC_VU;
+    }
 
     @Override
     public boolean equals(Object obj) {

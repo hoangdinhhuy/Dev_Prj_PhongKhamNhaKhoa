@@ -2,43 +2,26 @@ package main;
 
 import bus.TaiKhoan_BUS;
 import entity.SessionContext;
-import entity.PhieuKham;
-import gui.GD_LapPhieuKham_Controller;
 import java.lang.reflect.Field;
-import java.time.LocalDate;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
 
-/** Smoke check FXML trên JavaFX thread với đúng vai trò của từng màn. */
+/** Smoke check FXML trên JavaFX thread với các màn hình Quản lý được yêu cầu. */
 public class LoadCheck {
     public static void main(String[] args) throws Exception {
         CountDownLatch done = new CountDownLatch(1);
         AtomicInteger failed = new AtomicInteger();
         Platform.startup(() -> Platform.runLater(() -> {
             try {
-                SessionContext letan = TaiKhoan_BUS.dangNhap("NV0001", "123456");
-                SessionContext phuta = TaiKhoan_BUS.dangNhap("NV0005", "123456");
-                SessionContext bacsi = TaiKhoan_BUS.dangNhap("NV0002", "123456");
                 SessionContext quanly = TaiKhoan_BUS.dangNhap("NV0007", "123456");
-                String[] screens = {"GD_DangNhap", "GD_Chinh", "GD_TongQuan", "GD_QLBenhNhan",
-                        "GD_TraCuuBenhNhan", "GD_ThuTien", "GD_ChotCa", "GD_LapPhieuKham",
-                        "GD_HangCho", "GD_KhamBenh", "GD_LichSuKham", "GD_QLHangHoa",
+                App.session = quanly;
+                String[] screens = {"GD_DangNhap", "GD_Chinh", "GD_TongQuan", "GD_QLHangHoa",
                         "GD_QLNhanVien", "GD_QLDichVu", "GD_BaoCao"};
                 for (String name : screens) {
-                    App.session = switch (name) {
-                        case "GD_HangCho" -> phuta;
-                        case "GD_KhamBenh", "GD_LichSuKham" -> bacsi;
-                        case "GD_QLHangHoa", "GD_QLNhanVien", "GD_QLDichVu", "GD_BaoCao" -> quanly;
-                        default -> letan;
-                    };
                     try {
                         FXMLLoader loader = new FXMLLoader(LoadCheck.class.getResource("/gui/" + name + ".fxml"));
                         Parent view = loader.load();
@@ -49,27 +32,13 @@ public class LoadCheck {
                             java.util.List<String> actual = menu.getChildren().stream()
                                     .map(node -> ((Button) node).getText()).toList();
                             java.util.List<String> expected = java.util.List.of(
-                                    "Tổng quan", "Hồ sơ bệnh nhân", "Tra cứu hồ sơ bệnh nhân",
-                                    "Thu tiền (phí + dịch vụ)", "Lập phiếu khám", "Quản lý ca thu ngân");
+                                    "Tổng quan (Dashboard)",
+                                    "Quản lý nhân viên & tài khoản",
+                                    "Danh mục dịch vụ",
+                                    "Hàng hóa / Tồn kho",
+                                    "Báo cáo lượt khám & Xuất CSV");
                             if (!actual.equals(expected)) {
-                                throw new AssertionError("Menu lễ tân sai thứ tự: " + actual);
-                            }
-                        }
-                        if (name.equals("GD_LapPhieuKham")) {
-                            var controller = loader.getController();
-                            Field tilesField = controller.getClass().getDeclaredField("paneTiles");
-                            tilesField.setAccessible(true);
-                            FlowPane tiles = (FlowPane) tilesField.get(controller);
-                            if (tiles.getChildren().isEmpty()) {
-                                throw new AssertionError("Không có phòng để chọn");
-                            }
-                            var tile = tiles.getChildren().get(0);
-                            tile.getOnMouseClicked().handle(null);
-                            Field selectedField = controller.getClass().getDeclaredField("lb_phongDaChon");
-                            selectedField.setAccessible(true);
-                            Label selected = (Label) selectedField.get(controller);
-                            if (!selected.getText().startsWith(tile.getUserData() + " · ")) {
-                                throw new AssertionError("Bảng chi tiết không theo phòng đã chọn");
+                                throw new AssertionError("Menu quản lý sai thứ tự: " + actual);
                             }
                         }
                         System.out.println("[PASS] " + name + " -> " + view.getClass().getSimpleName());
@@ -91,5 +60,4 @@ public class LoadCheck {
         done.await();
         if (failed.get() != 0) System.exit(1);
     }
-
 }

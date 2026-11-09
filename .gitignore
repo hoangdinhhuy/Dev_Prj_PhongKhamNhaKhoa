@@ -1,4 +1,5 @@
 /target/
+**/target/
 /bin/
 /build/
 /out/
@@ -10,4 +11,5 @@
 .classpath
 .project
 .DS_Store
+**/db.properties
 src/main/resources/db.properties
