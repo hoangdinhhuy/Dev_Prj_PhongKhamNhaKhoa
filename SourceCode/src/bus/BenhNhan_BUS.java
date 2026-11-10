@@ -2,7 +2,6 @@ package bus;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
-import dao.PhongKham_DAO;
 import entity.BenhNhan;
 import entity.ChucVu;
 import entity.SessionContext;
@@ -83,7 +82,7 @@ public class BenhNhan_BUS {
                 }
             }
             case "SĐT" -> ds.addAll(dao.BenhNhan_DAO.layBenhNhanTheoSDT(khoa));
-            default -> ds.addAll(dao.BenhNhan_DAO.timBenhNhanTheoTen(khoa));
+            default -> ds.addAll(dao.BenhNhan_DAO.timBenhNhanTheoTen(khoa, 50));
         }
         return ds;
     }
@@ -104,10 +103,16 @@ public class BenhNhan_BUS {
         return dao.PhieuKham_DAO.layTheoBenhNhan(maBenhNhan);
     }
 
-    /** (Góp ý GV 2/5 — cách 1) Nút tường minh "Hiện tất cả" mới tải toàn bộ danh sách. */
+    /** Chỉ tải toàn bộ khi người dùng bấm "Hiện tất cả" ở màn quản lý hồ sơ. */
     public static ArrayList<BenhNhan> danhSachToanBo(SessionContext session) {
         QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
         return dao.BenhNhan_DAO.getAllBenhNhan();
+    }
+
+    /** Thay cho "tải toàn bộ": chỉ lấy N bệnh nhân mới nhất. */
+    public static ArrayList<BenhNhan> danhSachMoiNhat(SessionContext session, int gioiHan) {
+        QuyenUtil.kiemTraQuyen(session, ChucVu.LE_TAN);
+        return dao.BenhNhan_DAO.layBenhNhanMoiNhat(gioiHan);
     }
 
     /** (Góp ý GV P2-5 — gợi ý chọn nhanh) Truy vấn theo từ khóa và giới hạn kết quả ở SQL. */

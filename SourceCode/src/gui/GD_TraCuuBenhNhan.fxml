@@ -22,7 +22,7 @@
                 <TextField fx:id="txt_tuKhoa" prefWidth="320" promptText="Nhập từ khóa"
                            onAction="#tim"/>
                 <Button fx:id="btn_tim" text="Tìm" onAction="#tim" defaultButton="true"/>
-                <Button text="Hiện tất cả" onAction="#hienTatCa"/>
+                <Button text="50 bệnh nhân mới nhất" onAction="#hienTatCa"/>
             </HBox>
             <TableView fx:id="table_ketQua" prefHeight="430" VBox.vgrow="ALWAYS">
                 <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/></columnResizePolicy>

@@ -143,14 +143,19 @@ public class PhieuKham_DAO {
     }
 
     public static ArrayList<PhieuKham> layTheoBenhNhan(String maBenhNhan) {
-        String sql = "SELECT " + COLS + JOINS + " WHERE pk.maBenhNhan = ? ORDER BY pk.ngayKham DESC, pk.soThuTu";
+        String sql = "SELECT " + COLS
+                + ", ROW_NUMBER() OVER (ORDER BY pk.ngayKham, pk.soThuTu, pk.maPhieuKham) AS lanThu"
+                + JOINS + " WHERE pk.maBenhNhan = ?"
+                + " ORDER BY pk.ngayKham DESC, pk.soThuTu DESC, pk.maPhieuKham DESC";
         ArrayList<PhieuKham> ds = new ArrayList<>();
         Connection con = ConnectDB.getInstance().getConnection();
         try (PreparedStatement pstm = con.prepareStatement(sql)) {
             pstm.setString(1, maBenhNhan);
             try (ResultSet rs = pstm.executeQuery()) {
                 while (rs.next()) {
-                    ds.add(map(rs));
+                    PhieuKham pk = map(rs);
+                    pk.setLanThu(rs.getInt("lanThu"));
+                    ds.add(pk);
                 }
             }
         } catch (SQLException ex) {

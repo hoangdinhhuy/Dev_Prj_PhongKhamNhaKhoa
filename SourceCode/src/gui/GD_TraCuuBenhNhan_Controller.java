@@ -4,7 +4,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -13,14 +12,13 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import main.App;
 import bus.BenhNhan_BUS;
-import bus.PhieuKham_BUS;
 import entity.BenhNhan;
 import entity.PhieuKham;
 import util.AlertUtil;
 import util.FormatUtil;
 import util.MaThongBao;
 
-/** UC006 - Tra cuu ho so benh nhan + lich su phieu kham (chu file: Huy). */
+/** UC006 - Tra cứu hồ sơ bệnh nhân + lịch sử phiếu khám (chủ file: Thanh). */
 public class GD_TraCuuBenhNhan_Controller {
 
     @FXML private ComboBox<String> cbb_tieuChi;
@@ -54,15 +52,15 @@ public class GD_TraCuuBenhNhan_Controller {
                 xemChiTiet();
             }
         });
-        // (Góp ý GV 2/5 — cách 1, user chốt) Mở màn: bảng TRỐNG cho tới khi bấm Tìm.
+        // (Góp ý GV - cách 1) Mở màn: bảng TRỐNG cho tới khi bấm Tìm.
         nap(java.util.List.of());
     }
 
-    /** Nút tường minh: người dùng yêu cầu rõ ràng mới tải toàn bộ (không bao giờ tải mặc định). */
+    /** Không tải toàn bộ: chỉ hiện 50 bệnh nhân mới nhất. */
     @FXML
     private void hienTatCa() {
         try {
-            nap(BenhNhan_BUS.danhSachToanBo(App.session));
+            nap(BenhNhan_BUS.danhSachMoiNhat(App.session, 50));
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
         }
@@ -114,6 +112,9 @@ public class GD_TraCuuBenhNhan_Controller {
                         .append(" — ").append(FormatUtil.ngay(pk.getNgayKham()))
                         .append(" — ").append(pk.getTrangThai())
                         .append(" — ").append(pk.getChanDoan() == null ? pk.getLyDoKham() : pk.getChanDoan());
+                if (pk.getLanThu() > 0) {
+                    sb.append(" — lần điều trị thứ ").append(pk.getLanThu());
+                }
                 if (pk.getPhacDieuTri() != null) {
                     sb.append(" — phác đồ: ").append(pk.getPhacDieuTri());
                 }

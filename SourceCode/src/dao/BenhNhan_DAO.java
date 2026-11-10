@@ -18,6 +18,24 @@ public class BenhNhan_DAO {
                 rs.getString("cccd"), rs.getDate("ngaySinh").toLocalDate(), rs.getString("diaChi"),
                 rs.getString("tienSuDiUng"));
     }
+    /** Tìm theo tên, giới hạn số dòng ngay tại SQL. */
+    public static ArrayList<BenhNhan> timBenhNhanTheoTen(String tuKhoa, int gioiHan) {
+        String sql = "SELECT " + COLS + " FROM BenhNhan"
+                + " WHERE hoTen COLLATE Latin1_General_CI_AI LIKE ?"
+                + " ORDER BY maBenhNhan DESC OFFSET 0 ROWS FETCH NEXT ? ROWS ONLY";
+        ArrayList<BenhNhan> ds = new ArrayList<>();
+        Connection con = ConnectDB.getInstance().getConnection();
+        try (PreparedStatement pstm = con.prepareStatement(sql)) {
+            pstm.setString(1, "%" + tuKhoa.trim() + "%");
+            pstm.setInt(2, Math.max(1, gioiHan));
+            try (ResultSet rs = pstm.executeQuery()) {
+                while (rs.next()) ds.add(map(rs));
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Loi tim benh nhan theo ten", ex);
+        }
+        return ds;
+    }
 
     public static void themBenhNhan(Connection con, BenhNhan bn) throws SQLException {
         String sql = "INSERT INTO BenhNhan (maBenhNhan, hoTen, soDienThoai, cccd, ngaySinh, diaChi, tienSuDiUng)"

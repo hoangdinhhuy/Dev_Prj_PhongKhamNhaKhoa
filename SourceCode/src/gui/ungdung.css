@@ -82,7 +82,7 @@
 /* ---------- SIDEBAR ---------- */
 .sidebar {
     -fx-pref-width: 320;
-    -fx-background-color: linear-gradient(180deg, #FFFFFF 0%, #F2F7FC 100%);
+    -fx-background-color: linear-gradient(to bottom, #FFFFFF 0%, #F2F7FC 100%);
     -fx-padding: 18 12 16 12;
     -fx-spacing: 5;
     -fx-border-width: 0 1 0 0;

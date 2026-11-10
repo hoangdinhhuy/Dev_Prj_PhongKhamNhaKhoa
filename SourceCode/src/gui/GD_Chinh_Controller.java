@@ -16,7 +16,8 @@ import main.App;
 import entity.ChucVu;
 import entity.SessionContext;
 import util.AlertUtil;
-
+import entity.Quyen;
+import util.QuyenUtil;
 /**
  * Man hinh chinh: sidebar + khung noi dung. Bam menu thi FXML tuong ung duoc nap
  * vao khung giua (1 cua so duy nhat), muc menu dang chon duoc to sang.
@@ -60,22 +61,19 @@ public class GD_Chinh_Controller {
                 (tu[0].substring(0, 1) + (tu.length > 1 ? tu[tu.length - 1].substring(0, 1) : "")).toUpperCase());
         lb_chipTen.setText(ten);
         lb_chipVaiTro.setText(s == null || s.getChucVu() == null ? "—" : s.getChucVu().toString());
-        them("Tổng quan", "icon_house.png", "GD_TongQuan", ChucVu.LE_TAN, ChucVu.BAC_SI, ChucVu.PHU_TA, ChucVu.QUAN_LY);
-        them("Hồ sơ bệnh nhân", "icon_folder.png", "GD_QLBenhNhan", ChucVu.LE_TAN);
-        them("Tra cứu hồ sơ bệnh nhân", "icon_search.png", "GD_TraCuuBenhNhan", ChucVu.LE_TAN);
-        them("Thu tiền (phí + dịch vụ)", "icon_dollar.png", "GD_ThuTien", ChucVu.LE_TAN);
-        them("Lập phiếu khám", "icon_clipboard.png", "GD_LapPhieuKham", ChucVu.LE_TAN);
-        them("Quản lý ca thu ngân", "icon_receipt.png", "GD_ChotCa", ChucVu.LE_TAN);
-        them("Hàng chờ theo phòng", "icon_clock.png", "GD_HangCho", ChucVu.PHU_TA);
-        them("Quản lý phòng khám", "icon_house.png", "GD_QuanLyPhong", ChucVu.PHU_TA, ChucVu.QUAN_LY);
-        them("Thống kê hàng chờ", "icon_chart.png", "GD_ThongKeHangCho", ChucVu.PHU_TA, ChucVu.QUAN_LY);
-        them("Khám và chẩn đoán", "icon_stethoscope.png", "GD_KhamBenh", ChucVu.BAC_SI);
-        them("Lịch sử khám", "icon_history.png", "GD_LichSuKham", ChucVu.BAC_SI);
-        them("Quản lý hàng hóa", "icon_folder.png", "GD_QLHangHoa", ChucVu.QUAN_LY);
-        them("Quản lý nhân viên", "icon_users.png", "GD_QLNhanVien", ChucVu.QUAN_LY);
-        them("Quản lý dịch vụ", "icon_tooth.png", "GD_QLDichVu", ChucVu.QUAN_LY);
-        them("Báo cáo lượt khám", "icon_chart.png", "GD_BaoCao", ChucVu.QUAN_LY);
-        moFxml("GD_TongQuan");
+        them("Tổng quan", "icon_house.png", "GD_TongQuan", Quyen.XEM_TONG_QUAN);
+        them("Hồ sơ bệnh nhân", "icon_folder.png", "GD_QLBenhNhan", Quyen.QL_HO_SO_BENH_NHAN);
+        them("Tra cứu hồ sơ bệnh nhân", "icon_search.png", "GD_TraCuuBenhNhan", Quyen.TRA_CUU_BENH_NHAN);
+        them("Thu tiền (phí + dịch vụ)", "icon_dollar.png", "GD_ThuTien", Quyen.THU_TIEN);
+        them("Lập phiếu khám", "icon_clipboard.png", "GD_LapPhieuKham", Quyen.LAP_PHIEU_KHAM);
+        them("Quản lý ca thu ngân", "icon_receipt.png", "GD_ChotCa", Quyen.QL_CA_THU_NGAN);
+        them("Hàng chờ theo phòng", "icon_clock.png", "GD_HangCho", Quyen.XEM_HANG_CHO);
+        them("Khám và chẩn đoán", "icon_stethoscope.png", "GD_KhamBenh", Quyen.KHAM_BENH);
+        them("Lịch sử khám", "icon_history.png", "GD_LichSuKham", Quyen.XEM_LICH_SU_KHAM);
+        them("Quản lý hàng hóa", "icon_folder.png", "GD_QLHangHoa", Quyen.QL_HANG_HOA);
+        them("Quản lý nhân viên", "icon_users.png", "GD_QLNhanVien", Quyen.QL_NHAN_VIEN);
+        them("Quản lý dịch vụ", "icon_tooth.png", "GD_QLDichVu", Quyen.QL_DICH_VU);
+        them("Báo cáo lượt khám", "icon_chart.png", "GD_BaoCao", Quyen.XEM_BAO_CAO);
     }
 
     /** (App.quayVeTrangChu) Ve man Tong quan. */
@@ -108,25 +106,22 @@ public class GD_Chinh_Controller {
         }
     }
 
-    private void them(String tieuDe, String iconFile, String fxml, ChucVu... choPhep) {
-        SessionContext s = App.session;
-        for (ChucVu cv : choPhep) {
-            if (s != null && cv == s.getChucVu()) {
-                Button b = new Button(tieuDe);
-                b.setWrapText(true);
-                java.net.URL url = App.class.getResource("/pic/" + iconFile);
-                if (url != null) {
-                    b.setGraphic(new ImageView(new Image(url.toString(), 26, 26, true, true)));
-                }
-                b.getStyleClass().add("menu-btn");
-                b.setMaxWidth(Double.MAX_VALUE);
-                b.setOnAction(e -> moFxml(fxml));
-                vb_menu.getChildren().add(b);
-                nutMap.put(fxml, b);
-                iconMap.put(fxml, iconFile);
-                return;
-            }
+        private void them(String tieuDe, String iconFile, String fxml, Quyen quyen) {
+        if (!QuyenUtil.coQuyen(App.session, quyen)) {
+            return;
         }
+        Button b = new Button(tieuDe);
+        b.setWrapText(true);
+        java.net.URL url = App.class.getResource("/pic/" + iconFile);
+        if (url != null) {
+            b.setGraphic(new ImageView(new Image(url.toString(), 26, 26, true, true)));
+        }
+        b.getStyleClass().add("menu-btn");
+        b.setMaxWidth(Double.MAX_VALUE);
+        b.setOnAction(e -> moFxml(fxml));
+        vb_menu.getChildren().add(b);
+        nutMap.put(fxml, b);
+        iconMap.put(fxml, iconFile);
     }
 
     @FXML

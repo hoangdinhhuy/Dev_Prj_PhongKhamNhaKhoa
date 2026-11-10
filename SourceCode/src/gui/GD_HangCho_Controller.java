@@ -1,13 +1,19 @@
 package gui;
 
+import java.time.LocalDate;
+import java.util.List;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -18,10 +24,9 @@ import bus.PhongKham_BUS;
 import entity.PhieuKham;
 import entity.PhongKham;
 import util.AlertUtil;
-import util.FormatUtil;
 import util.MaThongBao;
 
-/** UC009 + PT-05 - Hang cho, goi so, vao kham, quan ly phong (chu file: Thanh). */
+/** UC009 + PT-05 - Hàng chờ, gọi số, vào khám, bật/tắt nhận bệnh. */
 public class GD_HangCho_Controller {
 
     @FXML private ComboBox<PhongKham> cbb_phong;
@@ -51,6 +56,13 @@ public class GD_HangCho_Controller {
     private void initialize() {
         setupTable(cl_stt, cl_ma, cl_bn, cl_lyDo, cl_tt);
         setupTable(cl_stt2, cl_ma2, cl_bn2, cl_lyDo2, null);
+        setupCombo(cbb_phong, false);
+        setupCombo(cbb_allPhong, true);
+
+        // Chỉ bấm được khi đã chọn một dòng ở bảng hàng chờ
+        btn_goSo.disableProperty().bind(table_hangCho.getSelectionModel().selectedItemProperty().isNull());
+        btn_xacNhanVaoKham.disableProperty().bind(table_hangCho.getSelectionModel().selectedItemProperty().isNull());
+
         napPhong();
         cbb_phong.valueProperty().addListener((o, cu, moi) -> {
             phieuVuaGoi = null;
@@ -60,15 +72,30 @@ public class GD_HangCho_Controller {
             table_hangCho.setUserData(Boolean.FALSE);
             taiLai();
         });
-        // Refresh tu dong moi 10 giay (le tan lap phieu -> hang cho tu thay)
+        // Làm mới mỗi 10 giây (lễ tân lập phiếu -> hàng chờ tự thấy). Dòng đang chọn được giữ nguyên.
         timeline = new Timeline(new KeyFrame(Duration.seconds(10), e -> taiLai()));
         timeline.setCycleCount(Timeline.INDEFINITE);
-        // Chỉ làm mới khi trang đang hiển thị; rời menu thì dừng timer cũ.
         cbb_phong.sceneProperty().addListener((o, cu, sc) -> {
             if (sc == null) timeline.stop();
             else timeline.play();
         });
         taiLai();
+    }
+
+    private void setupCombo(ComboBox<PhongKham> cbb, boolean hienTrangThai) {
+        cbb.setCellFactory(lv -> new ListCell<>() {
+            @Override protected void updateItem(PhongKham p, boolean empty) {
+                super.updateItem(p, empty);
+                if (empty || p == null) {
+                    setText(null);
+                } else {
+                    String s = p.getMaPhong() + " - " + p.getTenPhong();
+                    if (hienTrangThai) s += p.isDangNhanBenh() ? " [đang nhận]" : " [đã tắt]";
+                    setText(s);
+                }
+            }
+        });
+        cbb.setButtonCell(cbb.getCellFactory().call(null));
     }
 
     private void setupTable(TableColumn<PhieuKham, String> stt, TableColumn<PhieuKham, String> ma,
@@ -80,16 +107,15 @@ public class GD_HangCho_Controller {
         lyDo.setCellValueFactory(new PropertyValueFactory<>("lyDoKham"));
         if (tt != null) {
             tt.setCellValueFactory(cd -> new SimpleStringProperty(cd.getValue().getTrangThai().toString()));
-            tt.setCellFactory(col -> new javafx.scene.control.TableCell<>() {
+            tt.setCellFactory(col -> new TableCell<>() {
                 @Override
                 protected void updateItem(String item, boolean empty) {
                     super.updateItem(item, empty);
+                    getStyleClass().removeAll("badge-cho", "badge-dang", "badge-hoan");
                     if (empty || item == null) {
                         setText(null);
-                        getStyleClass().removeAll("badge-cho", "badge-dang", "badge-hoan");
                     } else {
                         setText(item);
-                        getStyleClass().removeAll("badge-cho", "badge-dang", "badge-hoan");
                         getStyleClass().add(switch (item) {
                             case "Chờ khám" -> "badge-cho";
                             case "Đang khám" -> "badge-dang";
@@ -101,31 +127,24 @@ public class GD_HangCho_Controller {
         }
     }
 
+    /** Nạp lại 2 combo, giữ phòng đang chọn nếu còn. */
     private void napPhong() {
-        String maDangChon = cbb_phong.getValue() == null ? null : cbb_phong.getValue().getMaPhong();
-        var ds = PhongKham_BUS.danhSachPhongDangNhanBenh(App.session);
-        cbb_phong.setItems(FXCollections.observableArrayList(ds));
-        cbb_phong.setValue(ds.stream().filter(p -> p.getMaPhong().equals(maDangChon))
-                .findFirst().orElse(ds.isEmpty() ? null : ds.get(0)));
-        cbb_phong.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
-            @Override protected void updateItem(PhongKham p, boolean empty) {
-                super.updateItem(p, empty);
-                setText(empty || p == null ? null : p.getMaPhong() + " - " + p.getTenPhong());
-            }
-        });
-        cbb_phong.setButtonCell(cbb_phong.getCellFactory().call(null));
+        String maXem = cbb_phong.getValue() == null ? null : cbb_phong.getValue().getMaPhong();
+        List<PhongKham> dsXem = PhongKham_BUS.danhSachPhongPhuTrachDangNhan(App.session);
+        cbb_phong.setItems(FXCollections.observableArrayList(dsXem));
+        cbb_phong.setValue(dsXem.stream().filter(p -> p.getMaPhong().equals(maXem))
+                .findFirst().orElse(dsXem.isEmpty() ? null : dsXem.get(0)));
+
+        String maBatTat = cbb_allPhong.getValue() == null ? null : cbb_allPhong.getValue().getMaPhong();
         try {
-            cbb_allPhong.setItems(FXCollections.observableArrayList(PhongKham_BUS.danhSachTatCaPhong(App.session)));
-            cbb_allPhong.setCellFactory(lv -> new javafx.scene.control.ListCell<>() {
-                @Override protected void updateItem(PhongKham p, boolean empty) {
-                    super.updateItem(p, empty);
-                    setText(empty || p == null ? null : p.getMaPhong() + " - " + p.getTenPhong()
-                            + (p.isDangNhanBenh() ? " [đang nhận]" : " [tắt]"));
-                }
-            });
-            cbb_allPhong.setButtonCell(cbb_allPhong.getCellFactory().call(null));
-        } catch (RuntimeException ignored) {
-            // QUAN_LY mo man hinh nay khong co quyen danh sach tong - bo qua
+            List<PhongKham> dsBatTat = PhongKham_BUS.danhSachPhongBatTat(App.session);
+            cbb_allPhong.setItems(FXCollections.observableArrayList(dsBatTat));
+            // Mặc định chọn sẵn phòng đang xem ở trên
+            String uuTien = maBatTat != null ? maBatTat : maXem;
+            cbb_allPhong.setValue(dsBatTat.stream().filter(p -> p.getMaPhong().equals(uuTien))
+                    .findFirst().orElse(dsBatTat.isEmpty() ? null : dsBatTat.get(0)));
+        } catch (RuntimeException ex) {
+            cbb_allPhong.getItems().clear();
         }
     }
 
@@ -138,15 +157,13 @@ public class GD_HangCho_Controller {
             table_hangCho.setUserData(Boolean.FALSE);
             return;
         }
+        PhieuKham dangChon = table_hangCho.getSelectionModel().getSelectedItem();
+        String maDangChon = dangChon == null ? null : dangChon.getMaPhieuKham();
         try {
-            var cho = HangCho_BUS.danhSachCho(App.session, java.time.LocalDate.now(), phong.getMaPhong());
-            table_hangCho.getItems().clear();
+            var cho = HangCho_BUS.danhSachCho(App.session, LocalDate.now(), phong.getMaPhong());
             table_hangCho.setItems(FXCollections.observableArrayList(cho));
-            if (!cho.isEmpty()) {
-                table_hangCho.getSelectionModel().selectFirst();
-            }
-            var dang = HangCho_BUS.danhSachDangKham(App.session, java.time.LocalDate.now(), phong.getMaPhong());
-            table_dangKham.getItems().clear();
+            chonLai(maDangChon, cho);
+            var dang = HangCho_BUS.danhSachDangKham(App.session, LocalDate.now(), phong.getMaPhong());
             table_dangKham.setItems(FXCollections.observableArrayList(dang));
             if (cho.isEmpty() && Boolean.TRUE.equals(table_hangCho.getUserData())) {
                 AlertUtil.baoThongTin(MaThongBao.TB07);
@@ -155,6 +172,20 @@ public class GD_HangCho_Controller {
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
         }
+    }
+
+    /** Giữ đúng dòng đang chọn sau khi làm mới; nếu dòng đó đã biến mất thì chọn dòng đầu. */
+    private void chonLai(String maPhieu, List<PhieuKham> ds) {
+        if (ds.isEmpty()) return;
+        if (maPhieu != null) {
+            for (int i = 0; i < ds.size(); i++) {
+                if (maPhieu.equals(ds.get(i).getMaPhieuKham())) {
+                    table_hangCho.getSelectionModel().select(i);
+                    return;
+                }
+            }
+        }
+        table_hangCho.getSelectionModel().selectFirst();
     }
 
     @FXML
@@ -181,14 +212,13 @@ public class GD_HangCho_Controller {
         try {
             PhieuKham pk = HangCho_BUS.goiSo(App.session, phieuVuaGoi.getMaPhieuKham());
             lb_soDangGoi.setText(String.valueOf(pk.getSoThuTu()));
-            lb_phongDangGoi.setText("Phòng " + pk.getMaPhong());
+            lb_phongDangGoi.setText("Phòng " + pk.getMaPhong() + " - " + pk.getTenBenhNhan());
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
             phieuVuaGoi = null;
             btn_goiLai.setDisable(true);
         }
     }
-
 
     @FXML
     private void xacNhanVaoKham() {
@@ -199,7 +229,7 @@ public class GD_HangCho_Controller {
         }
         try {
             HangCho_BUS.tiepNhanVaoKham(App.session, chon.getMaPhieuKham());
-            AlertUtil.baoThongTin("Đã đưa " + chon.getTenBenhNhan() + " vào khám (DANG_KHAM).");
+            AlertUtil.baoThongTin("Đã đưa " + chon.getTenBenhNhan() + " vào khám.");
             taiLai();
         } catch (RuntimeException ex) {
             AlertUtil.baoLoi(ex.getMessage());
@@ -224,6 +254,19 @@ public class GD_HangCho_Controller {
             return;
         }
         try {
+            if (!bat) {
+                int dangCho = PhongKham_BUS.demPhieuDangCho(App.session, p.getMaPhong());
+                if (dangCho > 0) {
+                    Alert hoi = new Alert(Alert.AlertType.CONFIRMATION,
+                            "Phòng " + p.getMaPhong() + " còn " + dangCho
+                                    + " bệnh nhân đang chờ khám. Vẫn tắt nhận bệnh?",
+                            ButtonType.YES, ButtonType.NO);
+                    hoi.setHeaderText(null);
+                    if (hoi.showAndWait().orElse(ButtonType.NO) != ButtonType.YES) {
+                        return;
+                    }
+                }
+            }
             PhongKham_BUS.capNhatNhanBenh(App.session, p.getMaPhong(), bat);
             AlertUtil.baoThongTin("Phòng " + p.getMaPhong() + (bat ? " đã bật nhận bệnh." : " đã tắt nhận bệnh."));
             napPhong();
